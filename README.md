@@ -2,6 +2,11 @@
 
 A proof of concept Flutter project using Algolia.
 
+<p align="center">
+<img src="./resources/ios-demo.gif" width="300"/>
+</p>
+
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
