@@ -55,5 +55,6 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation "com.algolia:algoliasearch-client-kotlin:$kotlin_client_version"
+    implementation "io.ktor:ktor-client-okhttp:$ktor_version"
 }
