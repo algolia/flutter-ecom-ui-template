@@ -2,6 +2,16 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:http/http.dart' as http;
+
+//latency
+//927c3fe76d4b52c5a2912973f35a3077
+
+// curl -X POST \
+//      -H "X-Algolia-API-Key: 927c3fe76d4b52c5a2912973f35a3077" \
+//      -H "X-Algolia-Application-Id: latency" \
+//      --data-binary '{ "params": "query=bag" }' \
+//      "https://latency-dsn.algolia.net/1/indexes/STAGING_native_ecom_demo_products/query"
 
 void main() {
   runApp(MyApp());
@@ -14,20 +24,41 @@ class SearchHit {
   SearchHit(this.name, this.image);
 
   static SearchHit fromJson(Map<String, dynamic> json) {
-    return SearchHit(json['name'], json['image']);
+    return SearchHit(json['name'], json['image_urls'][0]);
   }
 }
 
-class AlgoliaAPI {
-  static const platform = const MethodChannel('com.algolia/api');
+class AlgoliaAPIClient extends http.BaseClient {
 
-  Future<dynamic> search(String query) async {
-    try {
-      var response = await platform.invokeMethod('search', ['instant_search', query]);
-      return jsonDecode(response);
-    } on PlatformException catch (_) {
-      return null;
-    }
+  final String appID;
+  final String apiKey;
+  final http.Client _inner;
+  // Future<dynamic> search(String query) async {
+  //   try {
+  //     var response = await platform.invokeMethod('search', ['instant_search', query]);
+  //     return jsonDecode(response);
+  //   } on PlatformException catch (_) {
+  //     return null;
+  //   }
+  // }
+
+  AlgoliaAPIClient(this.appID, this.apiKey, this._inner);
+
+  Future<http.StreamedResponse> send(http.BaseRequest request) {
+    request.headers['content-type'] = "application/json";
+    request.headers['X-Algolia-API-Key'] = apiKey;
+    request.headers['X-Algolia-Application-Id'] = appID;
+    print(request);
+    print(request.headers);
+    return _inner.send(request);
+  }
+  
+  Future<Map<dynamic, dynamic>> search(String query) async {
+    final request = http.Request("post", Uri.https('$appID-dsn.algolia.net', '1/indexes/STAGING_native_ecom_demo_products/query'));
+    request.body = '{"params": "query=$query"}';
+    final streamedResponse = await send(request);
+    final response = await http.Response.fromStream(streamedResponse);
+    return jsonDecode(utf8.decode(response.bodyBytes)) as Map;
   }
 }
 
@@ -64,13 +95,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  AlgoliaAPI algoliaAPI = AlgoliaAPI();
+  final algoliaAPI = AlgoliaAPIClient("latency", "927c3fe76d4b52c5a2912973f35a3077", http.Client());
   List<SearchHit> _hitsList = [];
   TextEditingController _textFieldController = TextEditingController();
   String _searchText = "";
 
   Future<void> _getSearchResult(String query) async {
     var response = await algoliaAPI.search(query);
+    print(response);
     var hitsList = (response['hits'] as List).map((json) {
       return SearchHit.fromJson(json);
     }).toList();
