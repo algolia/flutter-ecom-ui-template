@@ -55,6 +55,5 @@ flutter {
 }
 
 dependencies {
-    implementation "com.algolia:algoliasearch-client-kotlin:$kotlin_client_version"
-    implementation "io.ktor:ktor-client-okhttp:$ktor_version"
+    // Empty.
 }
