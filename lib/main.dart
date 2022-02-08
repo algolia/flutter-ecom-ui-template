@@ -1,72 +1,38 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
-import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_ecom_demo/firebase_client.dart';
+import 'package:flutter_ecom_demo/search_hit.dart';
+import 'algolia_api_client.dart';
 import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:http/http.dart' as http;
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
-}
-
-class SearchHit {
-  final String name;
-  final String image;
-
-  SearchHit(this.name, this.image);
-
-  static SearchHit fromJson(Map<String, dynamic> json) {
-    return SearchHit(json['name'], json['image_urls'][0]);
-  }
-}
-
-class AlgoliaAPIClient extends http.BaseClient {
-
-  final String appID;
-  final String apiKey;
-  final http.Client _inner;
-
-  AlgoliaAPIClient(this.appID, this.apiKey, this._inner);
-
-  Future<http.StreamedResponse> send(http.BaseRequest request) {
-    request.headers['content-type'] = "application/json";
-    request.headers['X-Algolia-API-Key'] = apiKey;
-    request.headers['X-Algolia-Application-Id'] = appID;
-    print(request);
-    print(request.headers);
-    return _inner.send(request);
-  }
-  
-  Future<Map<dynamic, dynamic>> search(String query) async {
-    final request = http.Request("post", Uri.https('$appID-dsn.algolia.net', '1/indexes/STAGING_native_ecom_demo_products/query'));
-    request.body = '{"params": "query=$query"}';
-    final streamedResponse = await send(request);
-    final response = await http.Response.fromStream(streamedResponse);
-    return jsonDecode(utf8.decode(response.bodyBytes)) as Map;
-  }
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Algolia & Flutter',
       theme: ThemeData(
-        primarySwatch: Colors.deepPurple,
+        primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Algolia & Flutter'),
+      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  MyHomePage({Key? key, this.title}) : super(key: key);
+  const MyHomePage({Key? key, required this.title}) : super(key: key);
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -77,10 +43,10 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String? title;
+  final String title;
 
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
@@ -88,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<SearchHit> _hitsList = [];
   TextEditingController _textFieldController = TextEditingController();
   String _searchText = "";
+  final firebaseClient = FirebaseClient();
 
   Future<void> _getSearchResult(String query) async {
     var response = await algoliaAPI.search(query);
@@ -110,10 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
         appBar: AppBar(
-          title: Text('Algolia & Flutter'),
+          // Here we take the value from the MyHomePage object that was created by
+          // the App.build method, and use it to set our appbar title.
+          title: Text(widget.title),
         ),
         body: Column(
-            // padding: const EdgeInsets.all(8),
+          // padding: const EdgeInsets.all(8),
             children: <Widget>[
               Container(
                   padding: EdgeInsets.symmetric(horizontal: 1),
@@ -124,52 +93,82 @@ class _MyHomePageState extends State<MyHomePage> {
                         border: InputBorder.none,
                         hintText: 'Enter a search term',
                         prefixIcon:
-                            Icon(Icons.search, color: Colors.deepPurple),
+                        Icon(Icons.search, color: Colors.deepPurple),
                         suffixIcon: _searchText.isNotEmpty
                             ? IconButton(
-                                onPressed: () {
-                                  setState(() {
-                                    _textFieldController.clear();
-                                  });
-                                },
-                                icon: Icon(Icons.clear),
-                              )
+                          onPressed: () {
+                            setState(() {
+                              _textFieldController.clear();
+                            });
+                          },
+                          icon: Icon(Icons.clear),
+                        )
                             : null),
                   )),
               Expanded(
                   child: _hitsList.isEmpty
                       ? Center(child: Text('No results'))
                       : ListView.builder(
-                          padding: const EdgeInsets.all(8),
-                          itemCount: _hitsList.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return Container(
-                                height: 50,
-                                padding: EdgeInsets.all(8),
-                                child: 
-                                InkWell (
-                                  child: _buildRow(_hitsList[index]), 
-                                  onTap: () { print("selected ${_hitsList[index].name}"); }
-                                )
-                            ); 
-                          }
-                        )
-                )
-            ]));
+                      padding: const EdgeInsets.all(8),
+                      itemCount: _hitsList.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final hit = _hitsList[index];
+                        return Container(
+                            height: 50,
+                            padding: EdgeInsets.all(8),
+                            child:
+                            InkWell(
+                                child: _buildRow(hit),
+                                onTap: () {
+                                  print("selected ${hit.name}");
+                                  presentPage(context, hit);
+                                }
+                            )
+                        );
+                      }
+                  )
+              )
+            ])
+    );
   }
 
-Widget _buildRow(SearchHit hit) {
-  return Row(children: <Widget>[
-                                  Container(
-                                      width: 50,
-                                      child: Image.network(
-                                          '${hit.image}')),
-                                  SizedBox(width: 10),
-                                  Expanded(
-                                      child: Text('${hit.name}')
-                                  )
-                                ]);
-}
+  void presentPage(BuildContext context, SearchHit hit) {
+    firebaseClient.get(hit.objectID).then((product) =>
+        showModalBottomSheet(
+            context: context,
+            builder: (BuildContext context) {
+              return Container(
+                  height: 200,
+                  color: Colors.amber,
+                  child: Center (
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text ("Product: ${product.brand} - ${product.name}"),
+                            ElevatedButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text('Close BottomSheet')
+                            )
+                          ]
+                      )
+                  ));
+            })
+    );
+  }
+
+  Widget _buildRow(SearchHit hit) {
+    return Row(children: <Widget>[
+      Container(
+          width: 50,
+          child: Image.network(
+              '${hit.image}')),
+      SizedBox(width: 10),
+      Expanded(
+          child: Text('${hit.name}')
+      )
+    ]);
+  }
 
   @override
   void initState() {
@@ -191,4 +190,5 @@ Widget _buildRow(SearchHit hit) {
     _textFieldController.dispose();
     super.dispose();
   }
+
 }
