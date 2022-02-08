@@ -5,18 +5,18 @@ import AlgoliaSearchClient
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
   
-  let algoliaAdapter = AlgoliaAPIFlutterAdapter(applicationID: "latency", apiKey: "1f6fd3a6fb973cb08419fe7d288fa4db")
+//  let algoliaAdapter = AlgoliaAPIFlutterAdapter(applicationID: "latency", apiKey: "1f6fd3a6fb973cb08419fe7d288fa4db")
   
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     
-    let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
-    let algoliaAPIChannel = FlutterMethodChannel(name: "com.algolia/api", binaryMessenger: controller.binaryMessenger)
-    algoliaAPIChannel.setMethodCallHandler(algoliaAdapter.perform(call:result:))
+//    let controller : FlutterViewController = window?.rootViewController as! FlutterViewController
+//    let algoliaAPIChannel = FlutterMethodChannel(name: "com.algolia/api", binaryMessenger: controller.binaryMessenger)
+//    algoliaAPIChannel.setMethodCallHandler(algoliaAdapter.perform(call:result:))
     
-    GeneratedPluginRegistrant.register(with: self)
+//    GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 

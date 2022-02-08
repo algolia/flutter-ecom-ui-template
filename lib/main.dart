@@ -3,17 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-//latency
-//927c3fe76d4b52c5a2912973f35a3077
-
-// curl -X POST \
-//      -H "X-Algolia-API-Key: 927c3fe76d4b52c5a2912973f35a3077" \
-//      -H "X-Algolia-Application-Id: latency" \
-//      --data-binary '{ "params": "query=bag" }' \
-//      "https://latency-dsn.algolia.net/1/indexes/STAGING_native_ecom_demo_products/query"
-
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
@@ -33,14 +30,6 @@ class AlgoliaAPIClient extends http.BaseClient {
   final String appID;
   final String apiKey;
   final http.Client _inner;
-  // Future<dynamic> search(String query) async {
-  //   try {
-  //     var response = await platform.invokeMethod('search', ['instant_search', query]);
-  //     return jsonDecode(response);
-  //   } on PlatformException catch (_) {
-  //     return null;
-  //   }
-  // }
 
   AlgoliaAPIClient(this.appID, this.apiKey, this._inner);
 
@@ -157,18 +146,30 @@ class _MyHomePageState extends State<MyHomePage> {
                             return Container(
                                 height: 50,
                                 padding: EdgeInsets.all(8),
-                                child: Row(children: <Widget>[
+                                child: 
+                                InkWell (
+                                  child: _buildRow(_hitsList[index]), 
+                                  onTap: () { print("selected ${_hitsList[index].name}"); }
+                                )
+                            ); 
+                          }
+                        )
+                )
+            ]));
+  }
+
+Widget _buildRow(SearchHit hit) {
+  return Row(children: <Widget>[
                                   Container(
                                       width: 50,
                                       child: Image.network(
-                                          '${_hitsList[index].image}')),
+                                          '${hit.image}')),
                                   SizedBox(width: 10),
                                   Expanded(
-                                      child: Text('${_hitsList[index].name}'))
-                                ]));
-                          }))
-            ]));
-  }
+                                      child: Text('${hit.name}')
+                                  )
+                                ]);
+}
 
   @override
   void initState() {
