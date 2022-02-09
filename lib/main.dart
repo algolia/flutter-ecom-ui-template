@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/firebase_client.dart';
 import 'package:flutter_ecom_demo/search_hit.dart';
+import 'package:flutter_ecom_demo/product_widget.dart';
 import 'algolia_api_client.dart';
 import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/cupertino.dart';
 
 
 void main() async {
@@ -121,7 +123,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 child: _buildRow(hit),
                                 onTap: () {
                                   print("selected ${hit.name}");
-                                  presentPage(context, hit);
+                                  presentProductPage(context, hit);
                                 }
                             )
                         );
@@ -132,28 +134,14 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void presentPage(BuildContext context, SearchHit hit) {
+  void presentProductPage(BuildContext context, SearchHit hit) {
     firebaseClient.get(hit.objectID).then((product) =>
-        showModalBottomSheet(
-            context: context,
+        Navigator.push(context, MaterialPageRoute<Null>(
             builder: (BuildContext context) {
-              return Container(
-                  height: 200,
-                  color: Colors.amber,
-                  child: Center (
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            Text ("Product: ${product.brand} - ${product.name}"),
-                            ElevatedButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Close BottomSheet')
-                            )
-                          ]
-                      )
-                  ));
-            })
+              return ProductPage(product: product);
+            },
+            fullscreenDialog: true,
+        ))
     );
   }
 
@@ -178,7 +166,6 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _searchText = _textFieldController.text;
         });
-        print(_searchText);
         _getSearchResult(_searchText);
       }
     });
@@ -192,3 +179,5 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 }
+
+
