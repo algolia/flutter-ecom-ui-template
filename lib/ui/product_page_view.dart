@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
 import 'package:flutter_ecom_demo/ui/rating_display.dart';
 
+import 'home.dart';
+
 class ProductPage extends StatefulWidget {
   const ProductPage({Key? key, required this.product}) : super(key: key);
 
@@ -29,7 +31,16 @@ class _ProductPageState extends State<ProductPage> {
   Widget build(BuildContext context) {
     final pageController = PageController();
     return Scaffold(
-        appBar: AppBar(title: Text("")),
+        appBar: AppBar(
+          titleSpacing: 0,
+          automaticallyImplyLeading: false,
+          title: Image.asset('assets/images/og.png', height: 128),
+          actions: const [
+            IconLabel(icon: Icons.pin_drop_outlined, text: 'STORES'),
+            IconLabel(icon: Icons.person_outline, text: 'ACCOUNTS'),
+            IconLabel(icon: Icons.shopping_bag_outlined, text: 'CART')
+          ],
+        ),
         body: SingleChildScrollView(
             child: Container(
                 child: Column(
@@ -48,8 +59,7 @@ class _ProductPageState extends State<ProductPage> {
                       child: IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(Icons.arrow_back, size: 20),
-                      )
-                  ),
+                      )),
                   Positioned(
                       left: 16,
                       bottom: 24,
@@ -91,7 +101,8 @@ class _ProductPageState extends State<ProductPage> {
                         value: product.reviews?.rating?.toInt() ?? 0,
                         reviewsCount: product.reviews?.count?.toInt() ?? 0,
                         iconSize: 12,
-                        fontSize: 12),
+                        fontSize: 12,
+                        isExtended: true),
                     SizedBox(height: 10),
                     _priceRow(product.price!),
                     SizedBox(height: 10),
@@ -151,16 +162,17 @@ class _ProductPageState extends State<ProductPage> {
     );
   }
 
-  Widget _sizesGrid(
-      Product product, String? selectedSize, Function(String) didSelectSize) {
+  Widget _sizesGrid(Product product, String? selectedSize, Function(String) didSelectSize) {
+    final sizesCount = product.sizes?.length ?? 0;
+    final rowsCount = sizesCount / 4 + (sizesCount % 4 == 0 ? 0 : 1);
     return Container(
-        height: 200,
+        height: rowsCount * 50,
         child: GridView.count(
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             crossAxisCount: 4,
             childAspectRatio: 4 / 2,
-            children: List.generate(product.sizes?.length ?? 0, (index) {
+            children: List.generate(sizesCount, (index) {
               String size = product.sizes?[index] ?? "";
               bool isSelected = size == selectedSize;
               if (isSelected) {
