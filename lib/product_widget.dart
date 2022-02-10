@@ -11,8 +11,9 @@ class ProductPage extends StatefulWidget {
 }
 
 class _ProductPageState extends State<ProductPage> {
-
   final Color tintColor = Color(0xFF23263B);
+
+  String? _selectedSize = null;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,6 @@ class _ProductPageState extends State<ProductPage> {
         appBar: AppBar(title: Text("")),
         body: SingleChildScrollView(
             child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
@@ -43,63 +43,101 @@ class _ProductPageState extends State<ProductPage> {
                           ),
                         ],
                       ),
-                      SizedBox(height: 10),
-                      SizedBox(
-                          width: double.infinity,
-                          child: Text(widget.product.brand,
-                              style: TextStyle(
-                                  height: 1, fontSize: 14, fontFamily: "Inter"),
-                              textAlign: TextAlign.left)),
-                      SizedBox(height: 10),
-                      SizedBox(
-                          width: double.infinity,
-                          child: Text(widget.product.name,
-                              style: TextStyle(
-                                  height: 1,
-                                  fontSize: 16,
-                                  fontFamily: "Inter",
-                                  fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.left)),
-                      widget.product.oneSize
-                          ? SizedBox.shrink()
-                          : _sizesGrid(widget.product),
-                      _priceRow(widget.product.price),
                       Container(
-                        width: double.maxFinite,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(primary: tintColor),
-                            onPressed: () => {}, child: Text("Add to Bag")),
-                      ),
-                      Container(
-                        child: OutlinedButton(
-                            onPressed: () => {},
-                            style: OutlinedButton.styleFrom(primary: tintColor, side: BorderSide(width: 1.0, color: tintColor, style: BorderStyle.solid),),
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.favorite_border),
-                                  SizedBox(width: 15.5),
-                                  Text("Favourite"),
-                                ])),
-                      )
+                          padding: EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(children: <Widget>[
+                            SizedBox(
+                                width: double.infinity,
+                                child: Text(widget.product.brand,
+                                    style: TextStyle(
+                                        height: 1,
+                                        fontSize: 14,
+                                        fontFamily: "Inter"),
+                                    textAlign: TextAlign.left)),
+                            SizedBox(height: 10),
+                            SizedBox(
+                                width: double.infinity,
+                                child: Text(widget.product.name,
+                                    style: TextStyle(
+                                        height: 1,
+                                        fontSize: 16,
+                                        fontFamily: "Inter",
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.left)),
+                            SizedBox(height: 10),
+                            widget.product.oneSize
+                                ? SizedBox.shrink()
+                                : _sizesGrid(
+                                    widget.product,
+                                    _selectedSize,
+                                    (size) => {
+                                          setState(() {
+                                            _selectedSize = size;
+                                          })
+                                        }),
+                            SizedBox(height: 10),
+                            _priceRow(widget.product.price),
+                            SizedBox(height: 10),
+                            Container(
+                              width: double.maxFinite,
+                              child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      primary: tintColor),
+                                  onPressed: () => {},
+                                  child: Text("Add to Bag")),
+                            ),
+                            Container(
+                              child: OutlinedButton(
+                                  onPressed: () => {},
+                                  style: OutlinedButton.styleFrom(
+                                    primary: tintColor,
+                                    side: BorderSide(
+                                        width: 1.0,
+                                        color: tintColor,
+                                        style: BorderStyle.solid),
+                                  ),
+                                  child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(Icons.favorite_border),
+                                        SizedBox(width: 12),
+                                        Text("Favorite"),
+                                      ])),
+                            )
+                          ])),
                     ]))));
   }
 
-  Widget _sizesGrid(Product product) {
+  Widget _sizesGrid(
+      Product product, String? selectedSize, Function(String) didSelectSize) {
     return SizedBox(
         height: 200,
         child: GridView.count(
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             crossAxisCount: 4,
+            childAspectRatio: 4 / 2,
             children: List.generate(product.available_sizes.length, (index) {
-              return Center(
-                child: OutlinedButton(
-                  onPressed: () => {},
-                  child: Text(product.available_sizes[index]),
-                  style: OutlinedButton.styleFrom(primary: tintColor, side: BorderSide(width: 1.0, color: tintColor),
-                ),)
-              );
+              String size = product.available_sizes[index];
+              bool isSelected = size == selectedSize;
+              if (isSelected) {
+                return ElevatedButton(
+                    style: ElevatedButton.styleFrom(primary: tintColor),
+                    onPressed: () => {didSelectSize(size)},
+                    child: Text(size));
+              } else {
+                return OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      primary: tintColor,
+                      side: BorderSide(
+                          width: 1.0,
+                          color: tintColor,
+                          style: BorderStyle.solid),
+                    ),
+                    onPressed: () => {didSelectSize(size)},
+                    child: Text(size));
+              }
             })));
   }
 
@@ -109,27 +147,28 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget _priceRow(Price price) {
     return SizedBox(
-        height: 40,
         child: Row(
-          children: [
-            if (price.isDiscounted)
-              Container(
-                decoration: BoxDecoration(color: Colors.tealAccent, borderRadius: BorderRadius.all(Radius.circular(2))),
-                padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                child: Text(
-                  "${price.discount_level}% OFF",
-                  style: TextStyle(backgroundColor: Colors.tealAccent),
-                ),
-              ),
-            if (price.isDiscounted)
-              Text(
-                "${formatPriceValue(price.discounted_value)} €",
-                style: TextStyle(
-                    color: Colors.grey, decoration: TextDecoration.lineThrough),
-              ),
-            Text("${formatPriceValue(price.value)} €",
-                style: TextStyle(color: Colors.deepPurpleAccent)),
-          ],
-        ));
+      children: [
+        if (price.isDiscounted)
+          Container(
+            decoration: BoxDecoration(
+                color: Colors.tealAccent,
+                borderRadius: BorderRadius.all(Radius.circular(2))),
+            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            child: Text(
+              "${price.discount_level}% OFF",
+              style: TextStyle(backgroundColor: Colors.tealAccent),
+            ),
+          ),
+        if (price.isDiscounted)
+          Text(
+            "${formatPriceValue(price.discounted_value)} €",
+            style: TextStyle(
+                color: Colors.grey, decoration: TextDecoration.lineThrough),
+          ),
+        Text("${formatPriceValue(price.value)} €",
+            style: TextStyle(color: Colors.deepPurpleAccent)),
+      ],
+    ));
   }
 }
