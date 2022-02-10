@@ -13,10 +13,19 @@ class ProductPage extends StatefulWidget {
 class _ProductPageState extends State<ProductPage> {
   final Color tintColor = Color(0xFF23263B);
 
-  String? _selectedSize = null;
+  String? _selectedSize;
+  int currentPage = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedSize =
+        widget.product.oneSize ? null : widget.product.available_sizes.first;
+  }
 
   @override
   Widget build(BuildContext context) {
+    final pageController = PageController();
     return Scaffold(
         appBar: AppBar(title: Text("")),
         body: SingleChildScrollView(
@@ -25,21 +34,29 @@ class _ProductPageState extends State<ProductPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: <Widget>[
               Stack(
-                alignment: Alignment.topLeft,
                 children: <Widget>[
                   Container(
                       decoration: new BoxDecoration(color: Colors.white),
-                      alignment: Alignment.center,
+                      alignment: Alignment.centerLeft,
                       height: 300,
-                      child: Image.network(widget.product.image_urls[0],
-                          fit: BoxFit.cover)),
-                  Align(
-                    alignment: Alignment.topLeft,
-                    child: IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.arrow_back),
-                    ),
-                  ),
+                      child: _imagesGallery(widget.product, pageController)),
+                  Positioned(
+                      left: 0,
+                      top: 0,
+                      child: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(Icons.arrow_back, size: 20),
+                      )),
+                  Positioned(
+                      left: 16,
+                      bottom: 21.5,
+                      child: Text(
+                          "${currentPage}/${widget.product.image_urls.length}")),
+                  Positioned.fill(
+                      bottom: 20,
+                      child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: _buildPageIndicator())),
                 ],
               ),
               Container(
@@ -105,6 +122,22 @@ class _ProductPageState extends State<ProductPage> {
             ]))));
   }
 
+  Widget _imagesGallery(Product product, PageController pageController) {
+    final imagesWidgets = List.generate(
+        product.image_urls.length,
+        (index) => Container(
+            width: 400,
+            child: Image.network(product.image_urls[index],
+                fit: BoxFit.fitHeight)));
+    return PageView(
+      controller: pageController,
+      children: imagesWidgets,
+      onPageChanged: (page) => setState(() {
+        currentPage = page + 1;
+      }),
+    );
+  }
+
   Widget _sizesGrid(
       Product product, String? selectedSize, Function(String) didSelectSize) {
     return Container(
@@ -139,6 +172,33 @@ class _ProductPageState extends State<ProductPage> {
 
   String formatPriceValue(double price) {
     return price.toStringAsFixed(price.truncateToDouble() == price ? 0 : 2);
+  }
+
+  Widget _indicator(bool isActive) {
+    return Container(
+      height: 10,
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 150),
+        margin: EdgeInsets.symmetric(horizontal: 4.0),
+        height: isActive ? 8 : 8,
+        width: isActive ? 8 : 8,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isActive ? tintColor : Color(0XFFEAEAEA),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPageIndicator() {
+    List<Widget> list = [];
+    for (int i = 0; i < widget.product.image_urls.length; i++) {
+      list.add(i == currentPage - 1 ? _indicator(true) : _indicator(false));
+    }
+    return Row(
+      children: list,
+      mainAxisAlignment: MainAxisAlignment.center,
+    );
   }
 
   Widget _priceRow(Price price) {
