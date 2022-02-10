@@ -22,8 +22,7 @@ class _ProductPageState extends State<ProductPage> {
   @override
   void initState() {
     super.initState();
-    _selectedSize =
-        product.oneSize ? null : product.sizes!.first;
+    _selectedSize = product.oneSize ? null : product.sizes!.first;
   }
 
   @override
@@ -49,14 +48,19 @@ class _ProductPageState extends State<ProductPage> {
                       child: IconButton(
                         onPressed: () => Navigator.pop(context),
                         icon: Icon(Icons.arrow_back, size: 20),
-                      )),
+                      )
+                  ),
                   Positioned(
                       left: 16,
-                      bottom: 21.5,
+                      bottom: 24,
                       child: Text(
-                          "${currentPage}/${product.images?.length ?? 0}")),
+                          "${currentPage}/${product.images?.length ?? 0}",
+                          style: TextStyle(
+                              color: tintColor,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w800))),
                   Positioned.fill(
-                      bottom: 20,
+                      bottom: 24,
                       child: Align(
                           alignment: Alignment.bottomCenter,
                           child: _buildPageIndicator())),
@@ -84,23 +88,23 @@ class _ProductPageState extends State<ProductPage> {
                             textAlign: TextAlign.left)),
                     SizedBox(height: 10),
                     RatingDisplay(
-                                  value: product.reviews?.rating?.toInt() ?? 0,
-                                  reviewsCount: product.reviews?.count?.toInt() ?? 0,
-                                  iconSize: 12,
-                    fontSize: 12),
+                        value: product.reviews?.rating?.toInt() ?? 0,
+                        reviewsCount: product.reviews?.count?.toInt() ?? 0,
+                        iconSize: 12,
+                        fontSize: 12),
                     SizedBox(height: 10),
                     _priceRow(product.price!),
                     SizedBox(height: 10),
                     product.oneSize
-                                            ? SizedBox.shrink()
-                                            : _sizesGrid(
-                                                product,
-                                                _selectedSize,
-                                                (size) => {
-                                                      setState(() {
-                                                        _selectedSize = size;
-                                                      })
-                                                    }),
+                        ? SizedBox.shrink()
+                        : _sizesGrid(
+                            product,
+                            _selectedSize,
+                            (size) => {
+                                  setState(() {
+                                    _selectedSize = size;
+                                  })
+                                }),
                     SizedBox(height: 10),
                     Container(
                       width: double.maxFinite,
@@ -192,9 +196,9 @@ class _ProductPageState extends State<ProductPage> {
         height: isActive ? 8 : 8,
         width: isActive ? 8 : 8,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: isActive ? tintColor : Color(0XFFEAEAEA),
-        ),
+            shape: BoxShape.circle,
+            color: isActive ? tintColor : Color(0x00000000),
+            border: isActive ? null : Border.all(color: Colors.grey, width: 1)),
       ),
     );
   }
