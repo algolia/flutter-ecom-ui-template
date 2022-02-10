@@ -335,11 +335,24 @@ class ProductView extends StatelessWidget {
       child: SizedBox(
         width: 150,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          SizedBox(
-              height: 100,
-              width: MediaQuery.of(context).size.width,
-              child: Image.network('${product.image}',
-                  alignment: imageAlignment, fit: BoxFit.cover)),
+          Stack(
+            alignment: AlignmentDirectional.bottomStart,
+            children: [
+              SizedBox(
+                  height: 100,
+                  width: MediaQuery.of(context).size.width,
+                  child: Image.network('${product.image}',
+                      alignment: imageAlignment, fit: BoxFit.cover)),
+              if (product.price?.onSales == true)
+                Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Text(" ON SALE ${product.price?.discountLevel}% ",
+                      style: Theme.of(context).textTheme.caption?.copyWith(
+                          color: Colors.white,
+                          backgroundColor: const Color(0xFFAA086C))),
+                )
+            ],
+          ),
           const SizedBox(height: 8),
           SizedBox(
               child: Text('${product.brand}',
@@ -355,18 +368,7 @@ class ProductView extends StatelessWidget {
                   style: Theme.of(context).textTheme.bodyText2)),
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 2.0),
-            child: Container(
-                width: 12,
-                height: 12,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color:
-                        Color(int.parse(product.color!.hexColor()!, radix: 16)),
-                    border: Border.all(
-                      width: 1,
-                      color: Colors.grey,
-                      style: BorderStyle.solid,
-                    ))),
+            child: ColorIndicator(product: product),
           ),
           Row(
             children: [
@@ -404,6 +406,38 @@ class ProductView extends StatelessWidget {
         ]),
       ),
     );
+  }
+}
+
+class ColorIndicator extends StatelessWidget {
+  const ColorIndicator({
+    Key? key,
+    required this.product,
+  }) : super(key: key);
+
+  final Product product;
+
+  @override
+  Widget build(BuildContext context) {
+    final isMultiColor = product.color?.originalName == 'multi';
+    return Container(
+        width: 12,
+        height: 12,
+        decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: !isMultiColor
+                ? Color(int.parse(product.color!.hexColor()!, radix: 16))
+                : null,
+            border: Border.all(
+              width: 1,
+              color: Colors.grey,
+              style: BorderStyle.solid,
+            ),
+            image: isMultiColor
+                ? const DecorationImage(
+                    fit: BoxFit.fill,
+                    image: AssetImage('assets/images/color_wheel.png'))
+                : null));
   }
 }
 
