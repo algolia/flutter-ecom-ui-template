@@ -136,11 +136,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void presentProductPage(BuildContext context, SearchHit hit) {
     firebaseClient.get(hit.objectID).then((product) =>
-        Navigator.push(context, MaterialPageRoute<Null>(
+        Navigator.push(context, MaterialPageRoute(
             builder: (BuildContext context) {
               return ProductPage(product: product);
             },
-            fullscreenDialog: true,
         ))
     );
   }
