@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/algolia_client.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
-import 'package:flutter_ecom_demo/ui/product.dart';
+import 'package:flutter_ecom_demo/ui/product_page_view.dart';
+import 'package:flutter_ecom_demo/ui/rating_display.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -405,21 +406,15 @@ class ProductView extends StatelessWidget {
                 ),
             ],
           ),
-          Row(
-            children: [
-              StarDisplay(value: product.reviews?.rating?.toInt() ?? 0),
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0),
-                child: Text('(${product.reviews?.count})',
-                    style: const TextStyle(fontSize: 8)),
-              )
-            ],
-          )
+          RatingDisplay(
+              value: product.reviews?.rating?.toInt() ?? 0,
+              reviewsCount: product.reviews?.count?.toInt() ?? 0),
         ]),
       ),
     );
   }
 }
+
 
 class StarDisplay extends StatelessWidget {
   const StarDisplay({Key? key, this.value = 0, this.size = 8})

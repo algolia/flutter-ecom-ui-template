@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
+import 'package:flutter_ecom_demo/ui/rating_display.dart';
 
 class ProductPage extends StatefulWidget {
   const ProductPage({Key? key, required this.product}) : super(key: key);
@@ -16,11 +17,13 @@ class _ProductPageState extends State<ProductPage> {
   String? _selectedSize;
   int currentPage = 1;
 
+  Product get product => widget.product;
+
   @override
   void initState() {
     super.initState();
     _selectedSize =
-        widget.product.oneSize ? null : widget.product.sizes!.first;
+        product.oneSize ? null : product.sizes!.first;
   }
 
   @override
@@ -39,7 +42,7 @@ class _ProductPageState extends State<ProductPage> {
                       decoration: new BoxDecoration(color: Colors.white),
                       alignment: Alignment.centerLeft,
                       height: 300,
-                      child: _imagesGallery(widget.product, pageController)),
+                      child: _imagesGallery(product, pageController)),
                   Positioned(
                       left: 0,
                       top: 0,
@@ -51,7 +54,7 @@ class _ProductPageState extends State<ProductPage> {
                       left: 16,
                       bottom: 21.5,
                       child: Text(
-                          "${currentPage}/${widget.product.images?.length ?? 0}")),
+                          "${currentPage}/${product.images?.length ?? 0}")),
                   Positioned.fill(
                       bottom: 20,
                       child: Align(
@@ -64,7 +67,7 @@ class _ProductPageState extends State<ProductPage> {
                   child: Column(children: <Widget>[
                     SizedBox(
                         width: double.infinity,
-                        child: Text(widget.product.brand ?? "",
+                        child: Text(product.brand ?? "",
                             style: TextStyle(
                                 fontSize: 14,
                                 fontFamily: "Inter",
@@ -73,25 +76,31 @@ class _ProductPageState extends State<ProductPage> {
                     SizedBox(height: 10),
                     SizedBox(
                         width: double.infinity,
-                        child: Text(widget.product.name ?? "",
+                        child: Text(product.name ?? "",
                             style: TextStyle(
                                 fontSize: 16,
                                 fontFamily: "Inter",
                                 fontWeight: FontWeight.w700),
                             textAlign: TextAlign.left)),
                     SizedBox(height: 10),
-                    widget.product.oneSize
-                        ? SizedBox.shrink()
-                        : _sizesGrid(
-                            widget.product,
-                            _selectedSize,
-                            (size) => {
-                                  setState(() {
-                                    _selectedSize = size;
-                                  })
-                                }),
+                    RatingDisplay(
+                                  value: product.reviews?.rating?.toInt() ?? 0,
+                                  reviewsCount: product.reviews?.count?.toInt() ?? 0,
+                                  iconSize: 12,
+                    fontSize: 12),
                     SizedBox(height: 10),
-                    _priceRow(widget.product.price!),
+                    _priceRow(product.price!),
+                    SizedBox(height: 10),
+                    product.oneSize
+                                            ? SizedBox.shrink()
+                                            : _sizesGrid(
+                                                product,
+                                                _selectedSize,
+                                                (size) => {
+                                                      setState(() {
+                                                        _selectedSize = size;
+                                                      })
+                                                    }),
                     SizedBox(height: 10),
                     Container(
                       width: double.maxFinite,
@@ -192,7 +201,7 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget _buildPageIndicator() {
     List<Widget> list = [];
-    for (int i = 0; i < (widget.product.images?.length ?? 0); i++) {
+    for (int i = 0; i < (product.images?.length ?? 0); i++) {
       list.add(i == currentPage - 1 ? _indicator(true) : _indicator(false));
     }
     return Row(
