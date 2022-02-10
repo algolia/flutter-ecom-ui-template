@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/product.dart';
+import 'package:flutter_ecom_demo/domain/product.dart';
 
 class ProductPage extends StatefulWidget {
   const ProductPage({Key? key, required this.product}) : super(key: key);
@@ -20,7 +20,7 @@ class _ProductPageState extends State<ProductPage> {
   void initState() {
     super.initState();
     _selectedSize =
-        widget.product.oneSize ? null : widget.product.available_sizes.first;
+        widget.product.oneSize ? null : widget.product.sizes!.first;
   }
 
   @override
@@ -51,7 +51,7 @@ class _ProductPageState extends State<ProductPage> {
                       left: 16,
                       bottom: 21.5,
                       child: Text(
-                          "${currentPage}/${widget.product.image_urls.length}")),
+                          "${currentPage}/${widget.product.images?.length ?? 0}")),
                   Positioned.fill(
                       bottom: 20,
                       child: Align(
@@ -64,7 +64,7 @@ class _ProductPageState extends State<ProductPage> {
                   child: Column(children: <Widget>[
                     SizedBox(
                         width: double.infinity,
-                        child: Text(widget.product.brand,
+                        child: Text(widget.product.brand ?? "",
                             style: TextStyle(
                                 fontSize: 14,
                                 fontFamily: "Inter",
@@ -73,7 +73,7 @@ class _ProductPageState extends State<ProductPage> {
                     SizedBox(height: 10),
                     SizedBox(
                         width: double.infinity,
-                        child: Text(widget.product.name,
+                        child: Text(widget.product.name ?? "",
                             style: TextStyle(
                                 fontSize: 16,
                                 fontFamily: "Inter",
@@ -91,7 +91,7 @@ class _ProductPageState extends State<ProductPage> {
                                   })
                                 }),
                     SizedBox(height: 10),
-                    _priceRow(widget.product.price),
+                    _priceRow(widget.product.price!),
                     SizedBox(height: 10),
                     Container(
                       width: double.maxFinite,
@@ -124,10 +124,10 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget _imagesGallery(Product product, PageController pageController) {
     final imagesWidgets = List.generate(
-        product.image_urls.length,
+        product.images?.length ?? 0,
         (index) => Container(
             width: 400,
-            child: Image.network(product.image_urls[index],
+            child: Image.network(product.images?[index] ?? "",
                 fit: BoxFit.fitHeight)));
     return PageView(
       controller: pageController,
@@ -147,8 +147,8 @@ class _ProductPageState extends State<ProductPage> {
             mainAxisSpacing: 12,
             crossAxisCount: 4,
             childAspectRatio: 4 / 2,
-            children: List.generate(product.available_sizes.length, (index) {
-              String size = product.available_sizes[index];
+            children: List.generate(product.sizes?.length ?? 0, (index) {
+              String size = product.sizes?[index] ?? "";
               bool isSelected = size == selectedSize;
               if (isSelected) {
                 return ElevatedButton(
@@ -170,7 +170,7 @@ class _ProductPageState extends State<ProductPage> {
             })));
   }
 
-  String formatPriceValue(double price) {
+  String formatPriceValue(num price) {
     return price.toStringAsFixed(price.truncateToDouble() == price ? 0 : 2);
   }
 
@@ -192,7 +192,7 @@ class _ProductPageState extends State<ProductPage> {
 
   Widget _buildPageIndicator() {
     List<Widget> list = [];
-    for (int i = 0; i < widget.product.image_urls.length; i++) {
+    for (int i = 0; i < (widget.product.images?.length ?? 0); i++) {
       list.add(i == currentPage - 1 ? _indicator(true) : _indicator(false));
     }
     return Row(
@@ -212,7 +212,7 @@ class _ProductPageState extends State<ProductPage> {
                 borderRadius: BorderRadius.all(Radius.circular(2))),
             padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             child: Text(
-              "${price.discount_level}% OFF",
+              "${price.discountLevel ?? 0}% OFF",
               style: TextStyle(
                 color: Colors.black87,
                 backgroundColor: Colors.tealAccent,
@@ -224,7 +224,7 @@ class _ProductPageState extends State<ProductPage> {
           ),
           Spacer(),
           Text(
-            "${formatPriceValue(price.discounted_value)} €",
+            "${formatPriceValue(price.discountedValue ?? 0)} €",
             style: TextStyle(
                 color: Colors.grey,
                 fontSize: 20,
@@ -235,7 +235,7 @@ class _ProductPageState extends State<ProductPage> {
           SizedBox(width: 16),
         ],
         if (!price.isDiscounted) Spacer(),
-        Text("${formatPriceValue(price.value)} €",
+        Text("${formatPriceValue(price.value ?? 0)} €",
             style: TextStyle(
                 color: Colors.deepPurpleAccent,
                 fontSize: 16,
