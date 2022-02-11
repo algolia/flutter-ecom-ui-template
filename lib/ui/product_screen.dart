@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
-import 'package:flutter_ecom_demo/ui/rating_display.dart';
+import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
 
-import 'home.dart';
+import 'home_screen.dart';
 
-class ProductPage extends StatefulWidget {
-  const ProductPage({Key? key, required this.product}) : super(key: key);
+class ProductScreen extends StatefulWidget {
+  const ProductScreen({Key? key, required this.product}) : super(key: key);
 
   final Product product;
 
   @override
-  State<ProductPage> createState() => _ProductPageState();
+  State<ProductScreen> createState() => _ProductScreenState();
 }
 
-class _ProductPageState extends State<ProductPage> {
+class _ProductScreenState extends State<ProductScreen> {
   final Color tintColor = Color(0xFF23263B);
 
   String? _selectedSize;

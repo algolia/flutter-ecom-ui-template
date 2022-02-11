@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home.dart';
+import 'package:flutter_ecom_demo/ui/widgets/star_display.dart';
 
 class RatingDisplay extends StatelessWidget {
 
@@ -31,5 +31,4 @@ class RatingDisplay extends StatelessWidget {
       ],
     );
   }
-
 }

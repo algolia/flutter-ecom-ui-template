@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/algolia_client.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
-import 'package:flutter_ecom_demo/ui/product_page_view.dart';
-import 'package:flutter_ecom_demo/ui/rating_display.dart';
+import 'package:flutter_ecom_demo/ui/product_screen.dart';
+import 'package:flutter_ecom_demo/ui/widgets/color_indicator.dart';
+import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -50,13 +51,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void presentProductPage(BuildContext context, String productID) {
-    _productRepository.getProduct(productID).then((product) =>
-        Navigator.push(context, MaterialPageRoute(
-          builder: (BuildContext context) {
-            return ProductPage(product: product);
-          },
-        ))
-    );
+    _productRepository
+        .getProduct(productID)
+        .then((product) => Navigator.push(context, MaterialPageRoute(
+              builder: (BuildContext context) {
+                return ProductScreen(product: product);
+              },
+            )));
   }
 
   @override
@@ -413,59 +414,6 @@ class ProductView extends StatelessWidget {
               reviewsCount: product.reviews?.count?.toInt() ?? 0),
         ]),
       ),
-    );
-  }
-}
-
-class ColorIndicator extends StatelessWidget {
-  const ColorIndicator({
-    Key? key,
-    required this.product,
-  }) : super(key: key);
-
-  final Product product;
-
-  @override
-  Widget build(BuildContext context) {
-    final isMultiColor = product.color?.originalName == 'multi';
-    return Container(
-        width: 12,
-        height: 12,
-        decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: !isMultiColor
-                ? Color(int.parse(product.color!.hexColor()!, radix: 16))
-                : null,
-            border: Border.all(
-              width: 1,
-              color: Colors.grey,
-              style: BorderStyle.solid,
-            ),
-            image: isMultiColor
-                ? const DecorationImage(
-                    fit: BoxFit.fill,
-                    image: AssetImage('assets/images/color_wheel.png'))
-                : null));
-  }
-}
-
-class StarDisplay extends StatelessWidget {
-  const StarDisplay({Key? key, this.value = 0, this.size = 8})
-      : super(key: key);
-
-  final int value;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        return Icon(
-          index < value ? Icons.star : Icons.star_border,
-          size: size,
-        );
-      }),
     );
   }
 }
