@@ -6,6 +6,12 @@ class Product {
   final Price? price;
   final Reviews? reviews;
   final ProductColor? color;
+  final List<String>? images;
+  final List<String>? sizes;
+
+  String get image_url => images!.first;
+
+  bool get oneSize => sizes == null || (sizes!.length == 1 && sizes!.first == "one size");
 
   Product(
       {this.objectID,
@@ -14,7 +20,9 @@ class Product {
       this.brand,
       this.price,
       this.reviews,
-      this.color});
+      this.color,
+      this.images,
+      this.sizes});
 
   static Product fromJson(Map<String, dynamic> json) {
     return Product(
@@ -24,7 +32,9 @@ class Product {
         brand: json['brand'],
         price: Price.fromJson(json['price']),
         reviews: Reviews.fromJson(json['reviews']),
-        color: ProductColor.fromJson(json['color']));
+        color: ProductColor.fromJson(json['color']),
+        images: List<String>.from(json['image_urls']),
+        sizes: List<String>.from(json['available_sizes']));
   }
 
   @override
@@ -39,6 +49,8 @@ class Price {
   final num? discountedValue;
   final num? discountLevel;
   final bool? onSales;
+
+  bool get isDiscounted => discountedValue != null && discountedValue != 0;
 
   Price(
       {this.currency,

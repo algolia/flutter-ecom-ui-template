@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/algolia_client.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
+import 'package:flutter_ecom_demo/ui/product_screen.dart';
+import 'package:flutter_ecom_demo/ui/widgets/color_indicator.dart';
+import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -45,6 +48,16 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _recommended = products;
     });
+  }
+
+  void presentProductPage(BuildContext context, String productID) {
+    _productRepository
+        .getProduct(productID)
+        .then((product) => Navigator.push(context, MaterialPageRoute(
+              builder: (BuildContext context) {
+                return ProductScreen(product: product);
+              },
+            )));
   }
 
   @override
@@ -134,11 +147,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       product: _newInShoes[index],
                                       imageAlignment: Alignment.bottomCenter,
                                       onProductPressed: (objectID) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(SnackBar(
-                                          content: Text(
-                                              "Navigate to $objectID: TBD"),
-                                        ));
+                                        presentProductPage(context, objectID);
+                                        // ScaffoldMessenger.of(context)
+                                        //     .showSnackBar(SnackBar(
+                                        //   content: Text(
+                                        //       "Navigate to $objectID: TBD"),
+                                        // ));
                                       });
                                 },
                                 separatorBuilder: (context, index) =>
@@ -160,11 +174,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   return ProductView(
                                     product: _seasonal[index],
                                     onProductPressed: (objectID) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content:
-                                            Text("Navigate to $objectID: TBD"),
-                                      ));
+                                      presentProductPage(context, objectID);
+                                      // ScaffoldMessenger.of(context)
+                                      //     .showSnackBar(SnackBar(
+                                      //   content:
+                                      //       Text("Navigate to $objectID: TBD"),
+                                      // ));
                                     },
                                   );
                                 },
@@ -187,11 +202,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                   return ProductView(
                                     product: _recommended[index],
                                     onProductPressed: (objectID) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(SnackBar(
-                                        content:
-                                            Text("Navigate to $objectID: TBD"),
-                                      ));
+                                      presentProductPage(context, objectID);
+                                      // ScaffoldMessenger.of(context)
+                                      //     .showSnackBar(SnackBar(
+                                      //   content:
+                                      //       Text("Navigate to $objectID: TBD"),
+                                      // ));
                                     },
                                   );
                                 },
@@ -393,71 +409,11 @@ class ProductView extends StatelessWidget {
                 ),
             ],
           ),
-          Row(
-            children: [
-              StarDisplay(value: product.reviews?.rating?.toInt() ?? 0),
-              Padding(
-                padding: const EdgeInsets.only(left: 4.0),
-                child: Text('(${product.reviews?.count})',
-                    style: const TextStyle(fontSize: 8)),
-              )
-            ],
-          )
+          RatingDisplay(
+              value: product.reviews?.rating?.toInt() ?? 0,
+              reviewsCount: product.reviews?.count?.toInt() ?? 0),
         ]),
       ),
-    );
-  }
-}
-
-class ColorIndicator extends StatelessWidget {
-  const ColorIndicator({
-    Key? key,
-    required this.product,
-  }) : super(key: key);
-
-  final Product product;
-
-  @override
-  Widget build(BuildContext context) {
-    final isMultiColor = product.color?.originalName == 'multi';
-    return Container(
-        width: 12,
-        height: 12,
-        decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: !isMultiColor
-                ? Color(int.parse(product.color!.hexColor()!, radix: 16))
-                : null,
-            border: Border.all(
-              width: 1,
-              color: Colors.grey,
-              style: BorderStyle.solid,
-            ),
-            image: isMultiColor
-                ? const DecorationImage(
-                    fit: BoxFit.fill,
-                    image: AssetImage('assets/images/color_wheel.png'))
-                : null));
-  }
-}
-
-class StarDisplay extends StatelessWidget {
-  const StarDisplay({Key? key, this.value = 0, this.size = 8})
-      : super(key: key);
-
-  final int value;
-  final double size;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) {
-        return Icon(
-          index < value ? Icons.star : Icons.star_border,
-          size: size,
-        );
-      }),
     );
   }
 }
