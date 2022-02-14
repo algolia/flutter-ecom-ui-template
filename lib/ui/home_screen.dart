@@ -66,6 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (BuildContext context) {
         return AutocompleteScreen();
       },
+      fullscreenDialog: true,
     ));
   }
 

@@ -1,5 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/ui/home_screen.dart';
+import 'package:flutter_ecom_demo/data/algolia_client.dart';
+import 'package:flutter_ecom_demo/domain/query.dart';
+
+class QuerySuggestion {
+  String query;
+
+  QuerySuggestion(this.query);
+
+  static QuerySuggestion fromJson(Map<String, dynamic> json) {
+    return QuerySuggestion(json["query"]);
+  }
+
+}
 
 class AutocompleteScreen extends StatefulWidget {
   const AutocompleteScreen({Key? key}) : super(key: key);
@@ -10,21 +22,25 @@ class AutocompleteScreen extends StatefulWidget {
 
 class _AutocompleteScreenState extends State<AutocompleteScreen> {
 
+  var algoliaClient = AlgoliaAPIClient("latency", "927c3fe76d4b52c5a2912973f35a3077", "STAGING_native_ecom_demo_products_query_suggestions");
   var searchTextController = TextEditingController();
 
   List<String> _history = ['jackets'];
-  List<String> _suggestions = [
-    'jackets',
-    'shoes',
-    'shoes black',
-    'sweater',
-    'moncler',
-    'shoes',
-    't-shirt'
-  ];
+  List<QuerySuggestion> _suggestions = [];
 
   void _didChangeSearchText() {
-    print(searchTextController.text);
+    final queryString = searchTextController.text;
+    print(queryString);
+    final query = Query(queryString);
+    algoliaClient.search(query).then((value) => _handleResponse(value));
+  }
+
+  void _handleResponse(Map<dynamic, dynamic> response) {
+    final hits = response["hits"];
+    final receivedSuggestions = List<QuerySuggestion>.from(hits.map((hit) => QuerySuggestion.fromJson(hit)));
+    setState(() {
+      _suggestions = receivedSuggestions;
+    });
   }
 
   void _didSumbitSearch(String query) {
@@ -35,7 +51,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     if (query.isEmpty) {
       return;
     }
-    _removeFromHistory(query);
+    _history.removeWhere((element) => element == query);
     setState(() {
       _history.add(query);
     });
@@ -135,7 +151,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
                             onTap: () => _applySuggestion(suggestion),
                             child: _historyRow(suggestion)));
                   },
-                  childCount: _history.length, // 1000 list items
+                  childCount: _history.length,
                 ),
               )),
         ],
@@ -152,14 +168,14 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
           sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) {
-              String suggestion = _suggestions[index];
+              String suggestion = _suggestions[index].query;
               return SizedBox(
                   height: 50,
                   child: InkWell(
                       onTap: () => _applySuggestion(suggestion),
                       child: _suggestionRow(suggestion)));
             },
-            childCount: _suggestions.length, // 1000 list items
+            childCount: _suggestions.length,
           )),
         ),
       ],
