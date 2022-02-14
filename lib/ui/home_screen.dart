@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/algolia_client.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
+import 'package:flutter_ecom_demo/ui/autocomplete_screen.dart';
 import 'package:flutter_ecom_demo/ui/product_screen.dart';
 import 'package:flutter_ecom_demo/ui/widgets/color_indicator.dart';
 import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
@@ -60,6 +61,14 @@ class _HomeScreenState extends State<HomeScreen> {
             )));
   }
 
+  void presentAutoComplete(BuildContext context) {
+    Navigator.push(context, MaterialPageRoute(
+      builder: (BuildContext context) {
+        return AutocompleteScreen();
+      },
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -101,10 +110,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: TextField(
                             readOnly: true,
                             onTap: () {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(const SnackBar(
-                                content: Text("TBD"),
-                              ));
+                              presentAutoComplete(context);
+                              // ScaffoldMessenger.of(context)
+                              //     .showSnackBar(const SnackBar(
+                              //   content: Text("TBD"),
+                              // ));
                             },
                             decoration: const InputDecoration(
                                 border: InputBorder.none,
