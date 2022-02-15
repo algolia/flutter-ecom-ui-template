@@ -9,7 +9,8 @@ class QuerySuggestion {
   QuerySuggestion(this.query, this.highlighted);
 
   static QuerySuggestion fromJson(Map<String, dynamic> json) {
-    return QuerySuggestion(json["query"], json["_highlightResult"]["query"]["value"]);
+    return QuerySuggestion(
+        json["query"], json["_highlightResult"]["query"]["value"]);
   }
 
   static RichText fromHighlighted(String highlighted) {
@@ -21,7 +22,10 @@ class QuerySuggestion {
     var matches = highlighted.allMatches(highlighted);
     var output = matches.map((e) => e.group(1));
     print("${highlighted}: ${output}");
-    return RichText(text: TextSpan(text: highlighted, style: TextStyle(color: Colors.black87, fontSize: 15)));
+    return RichText(
+        text: TextSpan(
+            text: highlighted,
+            style: TextStyle(color: Colors.black87, fontSize: 15)));
     return RichText(
       text: TextSpan(
         text: 'Hello ',
@@ -34,7 +38,6 @@ class QuerySuggestion {
     );
     // return Text(highlighted);
   }
-
 }
 
 class AutocompleteScreen extends StatefulWidget {
@@ -45,8 +48,10 @@ class AutocompleteScreen extends StatefulWidget {
 }
 
 class _AutocompleteScreenState extends State<AutocompleteScreen> {
-
-  var algoliaClient = AlgoliaAPIClient("latency", "927c3fe76d4b52c5a2912973f35a3077", "STAGING_native_ecom_demo_products_query_suggestions");
+  var algoliaClient = AlgoliaAPIClient(
+      "latency",
+      "927c3fe76d4b52c5a2912973f35a3077",
+      "STAGING_native_ecom_demo_products_query_suggestions");
   var searchTextController = TextEditingController();
 
   List<String> _history = ['jackets'];
@@ -61,7 +66,8 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
 
   void _handleResponse(Map<dynamic, dynamic> response) {
     final hits = response["hits"];
-    final receivedSuggestions = List<QuerySuggestion>.from(hits.map((hit) => QuerySuggestion.fromJson(hit)));
+    final receivedSuggestions = List<QuerySuggestion>.from(
+        hits.map((hit) => QuerySuggestion.fromJson(hit)));
     setState(() {
       _suggestions = receivedSuggestions;
     });
@@ -87,13 +93,17 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     });
   }
 
-  void _applySuggestion(String suggestion) {
+  void _completeSuggestion(String suggestion) {
     searchTextController.value = TextEditingValue(
       text: suggestion,
       selection: TextSelection.fromPosition(
         TextPosition(offset: suggestion.length),
       ),
     );
+  }
+
+  void _launchSearch(String suggestion) {
+    //to launch search
   }
 
   Widget _header() {
@@ -108,20 +118,23 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
               autofocus: true,
               onSubmitted: _didSumbitSearch,
               decoration: InputDecoration(
-                border: OutlineInputBorder(borderSide:  BorderSide(color: primaryColor, width: 1.0)),
-                focusedBorder: OutlineInputBorder(borderSide:  BorderSide(color: primaryColor, width: 1.0)),
+                border: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 1.0)),
+                focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: primaryColor, width: 1.0)),
                 prefixIcon: Icon(Icons.search, color: primaryColor),
                 hintText: "Search products, articles, faq, ...",
-                suffixIcon: searchTextController.text.isNotEmpty ? IconButton(
-                  onPressed: searchTextController.clear,
-                  icon: Icon(Icons.clear, color: primaryColor),
-                ) : null,
+                suffixIcon: searchTextController.text.isNotEmpty
+                    ? IconButton(
+                        onPressed: searchTextController.clear,
+                        icon: Icon(Icons.clear, color: primaryColor),
+                      )
+                    : null,
               ),
             ),
           ),
           TextButton(
-              onPressed: () => {Navigator.pop(context)},
-              child: Text("Cancel"))
+              onPressed: () => {Navigator.pop(context)}, child: Text("Cancel"))
         ],
       ),
     );
@@ -135,8 +148,13 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
       ),
       Text(suggestion, style: TextStyle(fontSize: 16)),
       Spacer(),
-      IconButton(onPressed: () => _removeFromHistory(suggestion), icon: Icon(Icons.close, color: Colors.grey)),
-      Icon(Icons.north_west, color: Colors.grey),
+      IconButton(
+          onPressed: () => _removeFromHistory(suggestion),
+          icon: Icon(Icons.close, color: Colors.grey)),
+      IconButton(
+        onPressed: () => _completeSuggestion(suggestion),
+        icon: Icon(Icons.north_west, color: Colors.grey),
+      )
     ]);
   }
 
@@ -148,36 +166,36 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
       ),
       Text(suggestion, style: TextStyle(fontSize: 16)),
       Spacer(),
-      // Text(, style: TextStyle(fontSize: 16)),
-      Icon(Icons.north_west, color: Colors.grey),
+      IconButton(
+        onPressed: () => _completeSuggestion(suggestion),
+        icon: Icon(Icons.north_west, color: Colors.grey),
+      )
     ]);
   }
 
   Widget _customScrollView() {
-    var sectionHeaderTextStyle = TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w400);
+    var sectionHeaderTextStyle = TextStyle(
+        fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w400);
     return Expanded(
         child: CustomScrollView(
       slivers: [
         if (_history.isNotEmpty) ...[
           SliverAppBar(
-            titleTextStyle: sectionHeaderTextStyle,
+              titleTextStyle: sectionHeaderTextStyle,
               title: Row(
-                children: [
-                  Text("Your searches"),
-                  Spacer()
-                ],
+                children: [Text("Your searches"), Spacer()],
               ),
               automaticallyImplyLeading: false),
           SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 12),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
+                  (BuildContext context, int index) {
                     String suggestion = _history[index];
                     return SizedBox(
                         height: 50,
                         child: InkWell(
-                            onTap: () => _applySuggestion(suggestion),
+                            onTap: () => _launchSearch(suggestion),
                             child: _historyRow(suggestion)));
                   },
                   childCount: _history.length,
@@ -186,10 +204,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
         ],
         SliverAppBar(
             titleTextStyle: sectionHeaderTextStyle,
-            title: Row(children: [
-              Text("Popular searches"),
-              Spacer()
-            ]),
+            title: Row(children: [Text("Popular searches"), Spacer()]),
             automaticallyImplyLeading: false),
         SliverPadding(
           padding: EdgeInsets.symmetric(horizontal: 12),
@@ -200,7 +215,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
               return SizedBox(
                   height: 50,
                   child: InkWell(
-                      onTap: () => _applySuggestion(suggestion),
+                      onTap: () => _launchSearch(suggestion),
                       child: _suggestionRow(suggestion)));
             },
             childCount: _suggestions.length,
