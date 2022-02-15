@@ -61,13 +61,16 @@ class _HomeScreenState extends State<HomeScreen> {
             )));
   }
 
-  void presentAutoComplete(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(
-      builder: (BuildContext context) {
-        return AutocompleteScreen();
-      },
-      fullscreenDialog: true,
-    ));
+  void _presentAutoComplete(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) {
+            var theme = Theme.of(context);
+            return Theme(data: theme, child: AutocompleteScreen());
+          },
+          fullscreenDialog: true,
+        ));
   }
 
   @override
@@ -110,18 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         Flexible(
                           child: TextField(
                             readOnly: true,
-                            onTap: () {
-                              presentAutoComplete(context);
-                              // ScaffoldMessenger.of(context)
-                              //     .showSnackBar(const SnackBar(
-                              //   content: Text("TBD"),
-                              // ));
-                            },
-                            decoration: const InputDecoration(
+                            onTap: () => _presentAutoComplete(context),
+                            decoration: InputDecoration(
                                 border: InputBorder.none,
-                                suffixIcon: Icon(Icons.search),
+                                suffixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor,),
                                 hintText:
-                                    "Search products, articles, faq, ..."),
+                                "Search products, articles, faq, ..."),
                           ),
                         )
                       ],
@@ -157,14 +154,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   return ProductView(
                                       product: _newInShoes[index],
                                       imageAlignment: Alignment.bottomCenter,
-                                      onProductPressed: (objectID) {
-                                        presentProductPage(context, objectID);
-                                        // ScaffoldMessenger.of(context)
-                                        //     .showSnackBar(SnackBar(
-                                        //   content: Text(
-                                        //       "Navigate to $objectID: TBD"),
-                                        // ));
-                                      });
+                                      onProductPressed: (objectID) =>
+                                          presentProductPage(
+                                              context, objectID));
                                 },
                                 separatorBuilder: (context, index) =>
                                     const SizedBox(width: 10)))
@@ -184,14 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 itemBuilder: (BuildContext context, int index) {
                                   return ProductView(
                                     product: _seasonal[index],
-                                    onProductPressed: (objectID) {
-                                      presentProductPage(context, objectID);
-                                      // ScaffoldMessenger.of(context)
-                                      //     .showSnackBar(SnackBar(
-                                      //   content:
-                                      //       Text("Navigate to $objectID: TBD"),
-                                      // ));
-                                    },
+                                    onProductPressed: (objectID) =>
+                                        presentProductPage(context, objectID),
                                   );
                                 },
                                 separatorBuilder: (context, index) =>

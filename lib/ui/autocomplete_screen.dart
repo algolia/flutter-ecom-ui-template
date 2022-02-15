@@ -4,11 +4,35 @@ import 'package:flutter_ecom_demo/domain/query.dart';
 
 class QuerySuggestion {
   String query;
+  String? highlighted;
 
-  QuerySuggestion(this.query);
+  QuerySuggestion(this.query, this.highlighted);
 
   static QuerySuggestion fromJson(Map<String, dynamic> json) {
-    return QuerySuggestion(json["query"]);
+    return QuerySuggestion(json["query"], json["_highlightResult"]["query"]["value"]);
+  }
+
+  static RichText fromHighlighted(String highlighted) {
+    // RegExp exp = new RegExp(r"(\w+)");
+    // String str = "Parse my string";
+    // Iterable<RegExpMatch> matches = exp.allMatches(str);
+    List<TextSpan> textSpans = [];
+    var re = RegExp(r"<em>(\w+)<\/em>");
+    var matches = highlighted.allMatches(highlighted);
+    var output = matches.map((e) => e.group(1));
+    print("${highlighted}: ${output}");
+    return RichText(text: TextSpan(text: highlighted, style: TextStyle(color: Colors.black87, fontSize: 15)));
+    return RichText(
+      text: TextSpan(
+        text: 'Hello ',
+        style: TextStyle(color: Colors.black87, fontSize: 15),
+        children: const <TextSpan>[
+          TextSpan(text: 'bold', style: TextStyle(fontWeight: FontWeight.bold)),
+          TextSpan(text: ' world!'),
+        ],
+      ),
+    );
+    // return Text(highlighted);
   }
 
 }
@@ -72,7 +96,8 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     );
   }
 
-  Widget _searchBar() {
+  Widget _header() {
+    var primaryColor = Color(0xFF21243D);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
@@ -83,21 +108,20 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
               autofocus: true,
               onSubmitted: _didSumbitSearch,
               decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderSide:
-                      const BorderSide(color: Colors.black87, width: 1.0),
-                ),
-                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(borderSide:  BorderSide(color: primaryColor, width: 1.0)),
+                focusedBorder: OutlineInputBorder(borderSide:  BorderSide(color: primaryColor, width: 1.0)),
+                prefixIcon: Icon(Icons.search, color: primaryColor),
                 hintText: "Search products, articles, faq, ...",
-                suffixIcon: IconButton(
+                suffixIcon: searchTextController.text.isNotEmpty ? IconButton(
                   onPressed: searchTextController.clear,
-                  icon: Icon(Icons.clear),
-                ),
+                  icon: Icon(Icons.clear, color: primaryColor),
+                ) : null,
               ),
             ),
           ),
           TextButton(
-              onPressed: () => {Navigator.pop(context)}, child: Text("Cancel"))
+              onPressed: () => {Navigator.pop(context)},
+              child: Text("Cancel"))
         ],
       ),
     );
@@ -109,11 +133,10 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
       SizedBox(
         width: 10,
       ),
-      Text(suggestion, style: TextStyle(fontSize: 20)),
+      Text(suggestion, style: TextStyle(fontSize: 16)),
       Spacer(),
-      IconButton(onPressed: () => _removeFromHistory(suggestion), icon: Icon(Icons.close)),
-      SizedBox(width: 10),
-      Icon(Icons.north_west),
+      IconButton(onPressed: () => _removeFromHistory(suggestion), icon: Icon(Icons.close, color: Colors.grey)),
+      Icon(Icons.north_west, color: Colors.grey),
     ]);
   }
 
@@ -123,20 +146,26 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
       SizedBox(
         width: 10,
       ),
-      Text(suggestion, style: TextStyle(fontSize: 20)),
+      Text(suggestion, style: TextStyle(fontSize: 16)),
       Spacer(),
-      Icon(Icons.north_west),
+      // Text(, style: TextStyle(fontSize: 16)),
+      Icon(Icons.north_west, color: Colors.grey),
     ]);
   }
 
   Widget _customScrollView() {
+    var sectionHeaderTextStyle = TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w400);
     return Expanded(
         child: CustomScrollView(
       slivers: [
         if (_history.isNotEmpty) ...[
           SliverAppBar(
+            titleTextStyle: sectionHeaderTextStyle,
               title: Row(
-                children: [Text("Your searches"), Spacer()],
+                children: [
+                  Text("Your searches"),
+                  Spacer()
+                ],
               ),
               automaticallyImplyLeading: false),
           SliverPadding(
@@ -156,10 +185,9 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
               )),
         ],
         SliverAppBar(
+            titleTextStyle: sectionHeaderTextStyle,
             title: Row(children: [
-              Text(
-                "Popular searches",
-              ),
+              Text("Popular searches"),
               Spacer()
             ]),
             automaticallyImplyLeading: false),
@@ -193,7 +221,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     return Scaffold(
         body: SafeArea(
             child: Column(children: [
-      _searchBar(),
+      _header(),
       SizedBox(height: 20),
       _customScrollView(),
     ])));
