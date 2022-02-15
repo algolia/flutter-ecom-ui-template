@@ -8,10 +8,12 @@ class Product {
   final ProductColor? color;
   final List<String>? images;
   final List<String>? sizes;
+  final String? description;
 
   String get image_url => images!.first;
 
-  bool get oneSize => sizes == null || (sizes!.length == 1 && sizes!.first == "one size");
+  bool get oneSize =>
+      sizes == null || (sizes!.length == 1 && sizes!.first == "one size");
 
   Product(
       {this.objectID,
@@ -22,7 +24,8 @@ class Product {
       this.reviews,
       this.color,
       this.images,
-      this.sizes});
+      this.sizes,
+      this.description});
 
   static Product fromJson(Map<String, dynamic> json) {
     return Product(
@@ -34,12 +37,13 @@ class Product {
         reviews: Reviews.fromJson(json['reviews']),
         color: ProductColor.fromJson(json['color']),
         images: List<String>.from(json['image_urls']),
-        sizes: List<String>.from(json['available_sizes']));
+        sizes: List<String>.from(json['available_sizes']),
+        description: json['description']);
   }
 
   @override
   String toString() {
-    return 'Product{objectID: $objectID, name: $name, brand: $brand, image: $image, price: $price, reviews: $reviews}';
+    return 'Product{objectID: $objectID, name: $name, brand: $brand, image: $image, price: $price, reviews: $reviews, color: $color, images: $images, sizes: $sizes, description: $description}';
   }
 }
 
@@ -84,6 +88,11 @@ class Reviews {
   static Reviews fromJson(Map<String, dynamic> json) {
     return Reviews(rating: json['rating'], count: json['count']);
   }
+
+  @override
+  String toString() {
+    return 'Reviews{rating: $rating, count: $count}';
+  }
 }
 
 class ProductColor {
@@ -101,8 +110,17 @@ class ProductColor {
     return buffer.toString();
   }
 
+  bool isMultiColor() {
+    return filterGroup?.split(';')[0] == 'multicolor';
+  }
+
   static ProductColor fromJson(Map<String, dynamic> json) {
     return ProductColor(
         filterGroup: json['filter_group'], originalName: json['original_name']);
+  }
+
+  @override
+  String toString() {
+    return 'ProductColor{filterGroup: $filterGroup, originalName: $originalName}';
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/ui/home_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_ecom_demo/ui/theme_colors.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -14,22 +15,22 @@ void main() async {
 class SWApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final primaryColor = Color(0xFF21243D);
+    const primaryColor = ThemeColors.darkBlue;
     return MaterialApp(
       title: 'Spencer & Williams Fashion',
       theme: ThemeData(
           fontFamily: 'Inter',
           primaryColor: primaryColor,
           scaffoldBackgroundColor: Colors.white,
-          buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
-          appBarTheme: AppBarTheme(
+          buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
+          appBarTheme: const AppBarTheme(
             backgroundColor: Colors.white,
             foregroundColor: primaryColor,
             //toolbarTextStyle: TextStyle(color: primaryColor)
           ),
           textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(primary: primaryColor))),
-      home: HomeScreen(),
+      home: const HomeScreen(),
     );
   }
 }

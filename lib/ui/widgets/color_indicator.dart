@@ -11,7 +11,7 @@ class ColorIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMultiColor = product.color?.originalName == 'multi';
+    final isMultiColor = product.color?.isMultiColor() ?? false;
     return Container(
         width: 12,
         height: 12,
@@ -27,8 +27,8 @@ class ColorIndicator extends StatelessWidget {
             ),
             image: isMultiColor
                 ? const DecorationImage(
-                fit: BoxFit.fill,
-                image: AssetImage('assets/images/color_wheel.png'))
+                    fit: BoxFit.fill,
+                    image: AssetImage('assets/images/color_wheel.png'))
                 : null));
   }
 }

@@ -34,6 +34,7 @@ dependencies:
   http: ^0.13.4
   firebase_core: ^1.12.0
   cloud_firestore: ^3.1.7
+  infinite_scroll_pagination: ^3.1.0
 
 dev_dependencies:
   flutter_test:

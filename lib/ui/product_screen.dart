@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
+import 'package:flutter_ecom_demo/ui/widgets/icon_label.dart';
 import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
-
-import 'home_screen.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({Key? key, required this.product}) : super(key: key);

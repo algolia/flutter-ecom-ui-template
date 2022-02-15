@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/algolia_client.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
+import 'package:flutter_ecom_demo/domain/query.dart';
 import 'package:flutter_ecom_demo/ui/autocomplete_screen.dart';
 import 'package:flutter_ecom_demo/ui/product_screen.dart';
-import 'package:flutter_ecom_demo/ui/widgets/color_indicator.dart';
-import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
+import 'package:flutter_ecom_demo/ui/theme_colors.dart';
+import 'package:flutter_ecom_demo/ui/widgets/icon_label.dart';
+import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,8 +16,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _productRepository = ProductRepository(AlgoliaAPIClient("latency",
-      "927c3fe76d4b52c5a2912973f35a3077", "STAGING_native_ecom_demo_products"));
+  final _productRepository = ProductRepository();
 
   List<Product> _newInShoes = [];
   List<Product> _seasonal = [];
@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> setupLatest() async {
-    final shoes = await _productRepository.getProducts('shoes');
+    final shoes = await _productRepository.getProducts(Query('shoes'));
     setState(() {
       _newInShoes = shoes;
     });
@@ -45,13 +45,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> setupRecommended() async {
-    final products = await _productRepository.getProducts('jacket');
+    final products = await _productRepository.getProducts(Query('jacket'));
     setState(() {
       _recommended = products;
     });
   }
 
-  void presentProductPage(BuildContext context, String productID) {
+  void _presentProductPage(BuildContext context, String productID) {
     _productRepository
         .getProduct(productID)
         .then((product) => Navigator.push(context, MaterialPageRoute(
@@ -111,14 +111,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             thickness: 1,
                             color: Colors.grey.withOpacity(0.5)),
                         Flexible(
+                          // TODO: revert changes below
                           child: TextField(
                             readOnly: true,
                             onTap: () => _presentAutoComplete(context),
                             decoration: InputDecoration(
                                 border: InputBorder.none,
-                                suffixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor,),
+                                suffixIcon: Icon(Icons.search,
+                                    color: Theme.of(context).primaryColor),
                                 hintText:
-                                "Search products, articles, faq, ..."),
+                                    "Search products, articles, faq, ..."),
                           ),
                         )
                       ],
@@ -151,12 +153,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: _newInShoes.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  return ProductView(
+                                  return ProductCardView(
                                       product: _newInShoes[index],
                                       imageAlignment: Alignment.bottomCenter,
-                                      onProductPressed: (objectID) =>
-                                          presentProductPage(
-                                              context, objectID));
+                                      onProductPressed: (objectID) {
+                                        _presentProductPage(context, objectID);
+                                      });
                                 },
                                 separatorBuilder: (context, index) =>
                                     const SizedBox(width: 10)))
@@ -174,10 +176,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: _seasonal.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  return ProductView(
+                                  return ProductCardView(
                                     product: _seasonal[index],
                                     onProductPressed: (objectID) =>
-                                        presentProductPage(context, objectID),
+                                        _presentProductPage(context, objectID),
                                   );
                                 },
                                 separatorBuilder: (context, index) =>
@@ -196,15 +198,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: _recommended.length,
                                 itemBuilder: (BuildContext context, int index) {
-                                  return ProductView(
+                                  return ProductCardView(
                                     product: _recommended[index],
                                     onProductPressed: (objectID) {
-                                      presentProductPage(context, objectID);
-                                      // ScaffoldMessenger.of(context)
-                                      //     .showSnackBar(SnackBar(
-                                      //   content:
-                                      //       Text("Navigate to $objectID: TBD"),
-                                      // ));
+                                      _presentProductPage(context, objectID);
                                     },
                                   );
                                 },
@@ -241,7 +238,7 @@ class SectionHeader extends StatelessWidget {
           onPressed: () {},
           child: const Text(
             'See More',
-            style: TextStyle(color: Color(0xFF5468FF)),
+            style: TextStyle(color: ThemeColors.nebula),
           ),
         )
       ],
@@ -287,130 +284,6 @@ class Banner extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class IconLabel extends StatelessWidget {
-  const IconLabel({
-    Key? key,
-    required this.icon,
-    required this.text,
-  }) : super(key: key);
-
-  final IconData icon;
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: Icon(icon),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(2.0),
-            child: Text(text, style: Theme.of(context).textTheme.caption),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class ProductView extends StatelessWidget {
-  const ProductView(
-      {Key? key,
-      required this.product,
-      this.imageAlignment = Alignment.center,
-      this.onProductPressed})
-      : super(key: key);
-
-  final Product product;
-  final Alignment imageAlignment;
-  final ValueChanged<String>? onProductPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final priceValue = (product.price?.onSales ?? false)
-        ? product.price?.discountedValue
-        : product.price?.value;
-    final crossedValue =
-        (product.price?.onSales ?? false) ? product.price?.value : null;
-    return GestureDetector(
-      onTap: () {
-        onProductPressed?.call(product.objectID!);
-      },
-      child: SizedBox(
-        width: 150,
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Stack(
-            alignment: AlignmentDirectional.bottomStart,
-            children: [
-              SizedBox(
-                  height: 100,
-                  width: MediaQuery.of(context).size.width,
-                  child: Image.network('${product.image}',
-                      alignment: imageAlignment, fit: BoxFit.cover)),
-              if (product.price?.onSales == true)
-                Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Text(" ON SALE ${product.price?.discountLevel}% ",
-                      style: Theme.of(context).textTheme.caption?.copyWith(
-                          color: Colors.white,
-                          backgroundColor: const Color(0xFFAA086C))),
-                )
-            ],
-          ),
-          const SizedBox(height: 8),
-          SizedBox(
-              child: Text('${product.brand}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
-                  style: Theme.of(context).textTheme.caption)),
-          SizedBox(
-              child: Text('${product.name}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  softWrap: false,
-                  style: Theme.of(context).textTheme.bodyText2)),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0),
-            child: ColorIndicator(product: product),
-          ),
-          Row(
-            children: [
-              Text('$priceValue €',
-                  maxLines: 1,
-                  overflow: TextOverflow.clip,
-                  softWrap: false,
-                  style: Theme.of(context).textTheme.bodyText2?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFFE8600A))),
-              if (crossedValue != null)
-                Padding(
-                  padding: const EdgeInsets.only(left: 8.0),
-                  child: Text('$crossedValue €',
-                      maxLines: 1,
-                      overflow: TextOverflow.clip,
-                      softWrap: false,
-                      style: Theme.of(context)
-                          .textTheme
-                          .caption
-                          ?.copyWith(decoration: TextDecoration.lineThrough)),
-                ),
-            ],
-          ),
-          RatingDisplay(
-              value: product.reviews?.rating?.toInt() ?? 0,
-              reviewsCount: product.reviews?.count?.toInt() ?? 0),
-        ]),
-      ),
     );
   }
 }
