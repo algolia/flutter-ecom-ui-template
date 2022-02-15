@@ -13,8 +13,9 @@ class ProductScreen extends StatefulWidget {
   State<ProductScreen> createState() => _ProductScreenState();
 }
 
+final Color tintColor = Color(0xFF23263B);
+
 class _ProductScreenState extends State<ProductScreen> {
-  final Color tintColor = Color(0xFF23263B);
 
   String? _selectedSize;
   int currentPage = 1;

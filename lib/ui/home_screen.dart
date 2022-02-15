@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/algolia_client.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/domain/product.dart';
+import 'package:flutter_ecom_demo/ui/autocomplete_screen.dart';
 import 'package:flutter_ecom_demo/ui/product_screen.dart';
 import 'package:flutter_ecom_demo/ui/widgets/color_indicator.dart';
 import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
@@ -60,6 +61,18 @@ class _HomeScreenState extends State<HomeScreen> {
             )));
   }
 
+  void _presentAutoComplete(BuildContext context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) {
+            var theme = Theme.of(context);
+            return Theme(data: theme, child: AutocompleteScreen());
+          },
+          fullscreenDialog: true,
+        ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -100,17 +113,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         Flexible(
                           child: TextField(
                             readOnly: true,
-                            onTap: () {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(const SnackBar(
-                                content: Text("TBD"),
-                              ));
-                            },
-                            decoration: const InputDecoration(
+                            onTap: () => _presentAutoComplete(context),
+                            decoration: InputDecoration(
                                 border: InputBorder.none,
-                                suffixIcon: Icon(Icons.search),
+                                suffixIcon: Icon(Icons.search, color: Theme.of(context).primaryColor,),
                                 hintText:
-                                    "Search products, articles, faq, ..."),
+                                "Search products, articles, faq, ..."),
                           ),
                         )
                       ],
@@ -146,14 +154,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   return ProductView(
                                       product: _newInShoes[index],
                                       imageAlignment: Alignment.bottomCenter,
-                                      onProductPressed: (objectID) {
-                                        presentProductPage(context, objectID);
-                                        // ScaffoldMessenger.of(context)
-                                        //     .showSnackBar(SnackBar(
-                                        //   content: Text(
-                                        //       "Navigate to $objectID: TBD"),
-                                        // ));
-                                      });
+                                      onProductPressed: (objectID) =>
+                                          presentProductPage(
+                                              context, objectID));
                                 },
                                 separatorBuilder: (context, index) =>
                                     const SizedBox(width: 10)))
@@ -173,14 +176,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 itemBuilder: (BuildContext context, int index) {
                                   return ProductView(
                                     product: _seasonal[index],
-                                    onProductPressed: (objectID) {
-                                      presentProductPage(context, objectID);
-                                      // ScaffoldMessenger.of(context)
-                                      //     .showSnackBar(SnackBar(
-                                      //   content:
-                                      //       Text("Navigate to $objectID: TBD"),
-                                      // ));
-                                    },
+                                    onProductPressed: (objectID) =>
+                                        presentProductPage(context, objectID),
                                   );
                                 },
                                 separatorBuilder: (context, index) =>
