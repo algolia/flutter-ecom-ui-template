@@ -1,45 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/algolia_client.dart';
+import 'package:flutter_ecom_demo/domain/highlighted_string.dart';
 import 'package:flutter_ecom_demo/domain/query.dart';
+import 'package:flutter_ecom_demo/domain/query_suggestion.dart';
 import 'package:flutter_ecom_demo/ui/search_results_screen.dart';
-
-class QuerySuggestion {
-  String query;
-  String? highlighted;
-
-  QuerySuggestion(this.query, this.highlighted);
-
-  static QuerySuggestion fromJson(Map<String, dynamic> json) {
-    return QuerySuggestion(
-        json["query"], json["_highlightResult"]["query"]["value"]);
-  }
-
-  static RichText fromHighlighted(String highlighted) {
-    // RegExp exp = new RegExp(r"(\w+)");
-    // String str = "Parse my string";
-    // Iterable<RegExpMatch> matches = exp.allMatches(str);
-    List<TextSpan> textSpans = [];
-    var re = RegExp(r"<em>(\w+)<\/em>");
-    var matches = highlighted.allMatches(highlighted);
-    var output = matches.map((e) => e.group(1));
-    print("${highlighted}: ${output}");
-    return RichText(
-        text: TextSpan(
-            text: highlighted,
-            style: TextStyle(color: Colors.black87, fontSize: 15)));
-    return RichText(
-      text: TextSpan(
-        text: 'Hello ',
-        style: TextStyle(color: Colors.black87, fontSize: 15),
-        children: const <TextSpan>[
-          TextSpan(text: 'bold', style: TextStyle(fontWeight: FontWeight.bold)),
-          TextSpan(text: ' world!'),
-        ],
-      ),
-    );
-    // return Text(highlighted);
-  }
-}
 
 class AutocompleteScreen extends StatefulWidget {
   const AutocompleteScreen({Key? key}) : super(key: key);
@@ -163,16 +127,54 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     ]);
   }
 
-  Widget _suggestionRow(String suggestion) {
+
+  RichText _highlightedText(String highlighted) {
+    List<HighlightedString> strings = [];
+    var re = RegExp(r"<em>(\w+)<\/em>");
+    var matches = re.allMatches(highlighted).toList();
+
+    void append(String string, bool isHighlighted) {
+      strings.add(HighlightedString(string, isHighlighted));
+    }
+
+    int prev = 0;
+    for (final match in matches) {
+      if (prev != match.start) {
+        append(highlighted.substring(prev, match.start)!, false);
+      }
+      append(match.group(1)!, true);
+      prev = match.end;
+    }
+    if (prev != highlighted.length) {
+      append(highlighted.substring(prev)!, false);
+    }
+
+    var spans = strings.map((string) => TextSpan(
+        text: string.string,
+        style: TextStyle(
+            fontWeight: string.isHighlighted ? FontWeight.bold : FontWeight.normal,
+            color: Colors.black87,
+            fontSize: 15)
+    )).toList();
+
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(color: Colors.black87, fontSize: 15),
+        children: spans,
+      ),
+    );
+  }
+
+  Widget _suggestionRow(QuerySuggestion suggestion) {
     return Row(children: [
       Icon(Icons.search),
       SizedBox(
         width: 10,
       ),
-      Text(suggestion, style: TextStyle(fontSize: 16)),
+      _highlightedText(suggestion.highlighted!),
       Spacer(),
       IconButton(
-        onPressed: () => _completeSuggestion(suggestion),
+        onPressed: () => _completeSuggestion(suggestion.query),
         icon: Icon(Icons.north_west, color: Colors.grey),
       )
     ]);
@@ -216,11 +218,11 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
           sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) {
-              String suggestion = _suggestions[index].query;
+              QuerySuggestion suggestion = _suggestions[index];
               return SizedBox(
                   height: 50,
                   child: InkWell(
-                      onTap: () => _launchSearch(suggestion),
+                      onTap: () => _launchSearch(suggestion.query),
                       child: _suggestionRow(suggestion)));
             },
             childCount: _suggestions.length,
