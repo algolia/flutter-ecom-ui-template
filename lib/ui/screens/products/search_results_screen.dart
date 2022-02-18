@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/domain/product.dart';
-import 'package:flutter_ecom_demo/domain/query.dart';
-import 'package:flutter_ecom_demo/ui/product_screen.dart';
-import 'package:flutter_ecom_demo/ui/widgets/icon_label.dart';
-import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/product_item_view.dart';
+import 'package:flutter_ecom_demo/model/product.dart';
+import 'package:flutter_ecom_demo/model/query.dart';
+import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
+import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_grid_view.dart';
+import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_list_view.dart';
+import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({Key? key, required this.query}) : super(key: key);
 
-  final String query;
+  final Query query;
 
   @override
   _SearchResultsScreen createState() => _SearchResultsScreen();
@@ -20,10 +20,9 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreen extends State<SearchResultsScreen> {
   final _productRepository = ProductRepository();
 
-  Query get _query => Query(widget.query);
+  Query get _query => widget.query;
   int _resultsCount = 0;
-
-  bool _isGrid = true;
+  _HitsDisplay _display = _HitsDisplay.grid;
 
   final PagingController<int, Product> _pagingController =
       PagingController(firstPageKey: 0);
@@ -55,16 +54,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: 0,
-        automaticallyImplyLeading: false,
-        title: Image.asset('assets/images/og.png', height: 128),
-        actions: const [
-          IconLabel(icon: Icons.pin_drop_outlined, text: 'STORES'),
-          IconLabel(icon: Icons.person_outline, text: 'ACCOUNTS'),
-          IconLabel(icon: Icons.shopping_bag_outlined, text: 'CART')
-        ],
-      ),
+      appBar: const AppBarView(),
       body: SafeArea(
           child: Column(
         children: [
@@ -105,10 +95,12 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                     splashRadius: 10,
                     padding: const EdgeInsets.all(0.0),
                     onPressed: () => setState(() {
-                      _isGrid = true;
+                      _display = _HitsDisplay.grid;
                     }),
                     icon: Icon(Icons.grid_view,
-                        size: 20, color: _isGrid ? Colors.blue : null),
+                        size: 20,
+                        color:
+                            _HitsDisplay.grid == _display ? Colors.blue : null),
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -119,10 +111,12 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                     splashRadius: 10,
                     padding: const EdgeInsets.all(0.0),
                     onPressed: () => setState(() {
-                      _isGrid = false;
+                      _display = _HitsDisplay.list;
                     }),
                     icon: Icon(Icons.view_list,
-                        size: 20, color: !_isGrid ? Colors.blue : null),
+                        size: 20,
+                        color:
+                            _HitsDisplay.list == _display ? Colors.blue : null),
                   ),
                 ),
               ],
@@ -132,58 +126,32 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
           Expanded(
             child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _isGrid ? productsGrid() : productsList()),
+                child: _hitsDisplay()),
           ),
         ],
       )),
     );
   }
 
-  void presentProductPage(BuildContext context, String productID) {
-    _productRepository
-        .getProduct(productID)
-        .then((product) => Navigator.push(context, MaterialPageRoute(
-              builder: (BuildContext context) {
-                return ProductScreen(product: product);
-              },
-            )));
+  Widget _hitsDisplay() {
+    switch (_display) {
+      case _HitsDisplay.list:
+        return PagedHitsListView(
+            pagingController: _pagingController,
+            onHitClick: (objectID) => _presentProductPage(context, objectID));
+      case _HitsDisplay.grid:
+        return PagedHitsGridView(
+            pagingController: _pagingController,
+            onHitClick: (objectID) => _presentProductPage(context, objectID));
+    }
   }
 
-  Widget productsGrid() {
-    return PagedGridView<int, Product>(
-      shrinkWrap: true,
-      pagingController: _pagingController,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        childAspectRatio: 0.9,
-        crossAxisSpacing: 20,
-        mainAxisSpacing: 20,
-        crossAxisCount: 2,
-      ),
-      builderDelegate: PagedChildBuilderDelegate<Product>(
-        itemBuilder: (context, item, index) => ProductCardView(
-            product: item,
-            imageAlignment: Alignment.bottomCenter,
-            onProductPressed: (objectID) {
-              presentProductPage(context, objectID);
-            }),
-      ),
-    );
-  }
-
-  Widget productsList() {
-    return PagedListView<int, Product>.separated(
-      shrinkWrap: true,
-      pagingController: _pagingController,
-      separatorBuilder: (context, index) => const SizedBox(height: 10),
-      builderDelegate: PagedChildBuilderDelegate<Product>(
-        itemBuilder: (context, item, index) => ProductItemView(
-            product: item,
-            imageAlignment: Alignment.bottomCenter,
-            onProductPressed: (objectID) {
-              presentProductPage(context, objectID);
-            }),
-      ),
-    );
+  void _presentProductPage(BuildContext context, String productID) {
+    _productRepository.getProduct(productID).then((product) => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => ProductScreen(product: product),
+        )));
   }
 
   @override
@@ -192,3 +160,5 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
     super.dispose();
   }
 }
+
+enum _HitsDisplay { list, grid }

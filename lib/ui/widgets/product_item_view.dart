@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/domain/product.dart';
-import 'package:flutter_ecom_demo/ui/theme_colors.dart';
-import 'package:flutter_ecom_demo/ui/widgets/color_indicator.dart';
-import 'package:flutter_ecom_demo/ui/widgets/rating_display.dart';
+import 'package:flutter_ecom_demo/model/product.dart';
+import 'package:flutter_ecom_demo/ui/app_theme.dart';
+import 'package:flutter_ecom_demo/ui/widgets/color_indicator_view.dart';
+import 'package:flutter_ecom_demo/ui/widgets/rating_view.dart';
 
 class ProductItemView extends StatelessWidget {
   const ProductItemView(
@@ -14,7 +14,7 @@ class ProductItemView extends StatelessWidget {
 
   final Product product;
   final Alignment imageAlignment;
-  final ValueChanged<String>? onProductPressed;
+  final Function(String)? onProductPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class ProductItemView extends StatelessWidget {
                       " ON SALE ${product.price?.discountLevel}% ",
                       style: Theme.of(context).textTheme.caption?.copyWith(
                           color: Colors.white,
-                          backgroundColor: ThemeColors.darkPink),
+                          backgroundColor: AppTheme.darkPink),
                     ))
             ],
           ),
@@ -74,7 +74,7 @@ class ProductItemView extends StatelessWidget {
                           ?.copyWith(fontSize: 12, color: Colors.grey)),
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2.0),
-                  child: ColorIndicator(product: product),
+                  child: ColorIndicatorView(product: product),
                 ),
                 Row(
                   children: [
@@ -84,7 +84,7 @@ class ProductItemView extends StatelessWidget {
                         softWrap: false,
                         style: Theme.of(context).textTheme.bodyText2?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: ThemeColors.vividOrange)),
+                            color: AppTheme.vividOrange)),
                     if (crossedValue != null)
                       Padding(
                         padding: const EdgeInsets.only(left: 8.0),
@@ -100,7 +100,7 @@ class ProductItemView extends StatelessWidget {
                       ),
                   ],
                 ),
-                RatingDisplay(
+                RatingView(
                     value: product.reviews?.rating?.toInt() ?? 0,
                     reviewsCount: product.reviews?.count?.toInt() ?? 0),
               ],

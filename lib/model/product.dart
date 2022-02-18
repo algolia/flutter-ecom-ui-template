@@ -10,8 +10,6 @@ class Product {
   final List<String>? sizes;
   final String? description;
 
-  String get image_url => images!.first;
-
   bool get oneSize =>
       sizes == null || (sizes!.length == 1 && sizes!.first == "one size");
 
