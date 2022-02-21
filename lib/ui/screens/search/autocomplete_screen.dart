@@ -19,116 +19,25 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   final searchTextController = TextEditingController();
 
   final List<String> _history = ['jackets'];
-  List<QuerySuggestion> _suggestions = [];
+  final List<QuerySuggestion> _suggestions = [];
 
   @override
   void initState() {
     super.initState();
-    searchTextController.addListener(_didChangeSearchText);
+    searchTextController.addListener(_onSearchTextChanged);
   }
 
-  void _didChangeSearchText() async {
+  void _onSearchTextChanged() async {
     final query = Query(searchTextController.text);
     final received = await suggestionsRepository.getSuggestions(query);
-    setState(() => _suggestions = received);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: SafeArea(
-            child: Column(children: [
-      _header(),
-      const SizedBox(height: 20),
-      _customScrollView(),
-    ])));
-  }
-
-  Widget _header() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: SearchHeaderView(
-        controller: searchTextController,
-        onSubmitted: _didSubmitSearch,
-      ),
-    );
-  }
-
-  void _didSubmitSearch(String query) {
-    _addToHistory(query);
-    _launchSearch(query);
+    _suggestions.clear();
+    setState(() => _suggestions.addAll(received));
   }
 
   void _addToHistory(String query) {
     if (query.isEmpty) return;
     _history.removeWhere((element) => element == query);
     setState(() => _history.add(query));
-  }
-
-  void _launchSearch(String query) {
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (BuildContext context) =>
-              SearchResultsScreen(query: Query(query)),
-        ));
-  }
-
-  Widget _customScrollView() {
-    final sectionHeaderTextStyle =
-        Theme.of(context).textTheme.subtitle2?.copyWith(color: Colors.grey);
-    return Expanded(
-        child: CustomScrollView(
-      slivers: [
-        if (_history.isNotEmpty) ...[
-          SliverAppBar(
-              titleTextStyle: sectionHeaderTextStyle,
-              title: Row(
-                children: const [Text("Your searches"), Spacer()],
-              ),
-              automaticallyImplyLeading: false),
-          SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    String suggestion = _history[index];
-                    return SizedBox(
-                        height: 50,
-                        child: InkWell(
-                            onTap: () => _launchSearch(suggestion),
-                            child: HistoryRowView(
-                                suggestion: suggestion,
-                                onTap: _completeSuggestion,
-                                onRemove: _removeFromHistory)));
-                  },
-                  childCount: _history.length,
-                ),
-              )),
-        ],
-        SliverAppBar(
-            titleTextStyle: sectionHeaderTextStyle,
-            title: Row(children: const [Text("Popular searches"), Spacer()]),
-            automaticallyImplyLeading: false),
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              QuerySuggestion suggestion = _suggestions[index];
-              return SizedBox(
-                  height: 50,
-                  child: InkWell(
-                      onTap: () => _didSubmitSearch(suggestion.query),
-                      child: SuggestionRowView(
-                          suggestion: suggestion,
-                          onPressed: _completeSuggestion)));
-            },
-            childCount: _suggestions.length,
-          )),
-        ),
-      ],
-    ));
   }
 
   void _removeFromHistory(String query) {
@@ -142,6 +51,90 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
         TextPosition(offset: suggestion.length),
       ),
     );
+  }
+
+  void _launchSearch(String query) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) =>
+              SearchResultsScreen(query: Query(query)),
+        ));
+  }
+
+  void _submitSearch(String query) {
+    _addToHistory(query);
+    _launchSearch(query);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: SafeArea(
+            child: Column(children: [
+      _header(),
+      const SizedBox(height: 20),
+      _body(),
+    ])));
+  }
+
+  Widget _header() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: SearchHeaderView(
+        controller: searchTextController,
+        onSubmitted: _submitSearch,
+      ),
+    );
+  }
+
+  Widget _body() {
+    return Expanded(
+        child: CustomScrollView(
+      slivers: [
+        if (_history.isNotEmpty)
+          ..._section("Your searches", _history, (String item) {
+            return HistoryRowView(
+                suggestion: item,
+                onTap: _completeSuggestion,
+                onRemove: _removeFromHistory);
+          }),
+        if (_suggestions.isNotEmpty)
+          ..._section("Popular searches", _suggestions, (QuerySuggestion item) {
+            return SuggestionRowView(
+                suggestion: item,
+                onTap: _completeSuggestion);
+          })
+      ],
+    ));
+  }
+
+  List<Widget> _section<Suggestion>(
+      String title, List<Suggestion> items, Function(Suggestion) rowBuilder) {
+    final sectionHeaderTextStyle =
+        Theme.of(context).textTheme.subtitle2?.copyWith(color: Colors.grey);
+    return [
+      SliverAppBar(
+          titleTextStyle: sectionHeaderTextStyle,
+          title: Row(
+            children: [Text(title), Spacer()],
+          ),
+          automaticallyImplyLeading: false),
+      SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+            (BuildContext context, int index) {
+              final item = items[index];
+              return SizedBox(
+                  height: 50,
+                  child: InkWell(
+                      onTap: () => _submitSearch(item.toString()),
+                      child: rowBuilder(item)));
+            },
+            childCount: items.length,
+          )))
+    ];
   }
 
   @override

@@ -8,4 +8,10 @@ class QuerySuggestion {
     return QuerySuggestion(
         json["query"], json["_highlightResult"]["query"]["value"]);
   }
+
+  @override
+  String toString() {
+    return query;
+  }
+
 }

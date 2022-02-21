@@ -3,11 +3,11 @@ import 'package:flutter_ecom_demo/model/highlighted_string.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 
 class SuggestionRowView extends StatelessWidget {
-  const SuggestionRowView({Key? key, required this.suggestion, this.onPressed})
+  const SuggestionRowView({Key? key, required this.suggestion, this.onTap})
       : super(key: key);
 
   final QuerySuggestion suggestion;
-  final Function(String)? onPressed;
+  final Function(String)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class SuggestionRowView extends StatelessWidget {
       _HighlightedTextView(highlighted: suggestion.highlighted!),
       const Spacer(),
       IconButton(
-        onPressed: () => onPressed?.call(suggestion.query),
+        onPressed: () => onTap?.call(suggestion.query),
         icon: const Icon(Icons.north_west, color: Colors.grey),
       )
     ]);
