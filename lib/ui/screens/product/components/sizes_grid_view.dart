@@ -18,6 +18,7 @@ class SizesGridView extends StatelessWidget {
     return SizedBox(
         height: rowsCount * 50,
         child: GridView.count(
+            physics: const NeverScrollableScrollPhysics(),
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             crossAxisCount: 4,
