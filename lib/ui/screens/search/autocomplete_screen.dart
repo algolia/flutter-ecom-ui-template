@@ -6,6 +6,7 @@ import 'package:flutter_ecom_demo/ui/screens/products/search_results_screen.dart
 import 'package:flutter_ecom_demo/ui/screens/search/components/history_row_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/components/search_header_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/components/suggestion_row_view.dart';
+import '../../app_theme.dart';
 
 class AutocompleteScreen extends StatefulWidget {
   const AutocompleteScreen({Key? key}) : super(key: key);
@@ -44,6 +45,10 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     setState(() => _history.removeWhere((element) => element == query));
   }
 
+  void _clearHistory() {
+    setState(() => _history.clear());
+  }
+
   void _completeSuggestion(String suggestion) {
     searchTextController.value = TextEditingValue(
       text: suggestion,
@@ -70,58 +75,70 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SafeArea(
-            child: Column(children: [
-      _header(),
-      const SizedBox(height: 20),
-      _body(),
-    ])));
+        appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: AppTheme.neutralLightest,
+            titleSpacing: 0,
+            elevation: 0,
+            title: _header()),
+        body: Column(children: [
+          _body(),
+        ]));
   }
 
   Widget _header() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: SearchHeaderView(
-        controller: searchTextController,
-        onSubmitted: _submitSearch,
-      ),
+    return SearchHeaderView(
+      controller: searchTextController,
+      onSubmitted: _submitSearch,
     );
   }
 
   Widget _body() {
     return Expanded(
-        child: CustomScrollView(
-      slivers: [
-        if (_history.isNotEmpty)
-          ..._section("Your searches", _history, (String item) {
-            return HistoryRowView(
-                suggestion: item,
-                onTap: _completeSuggestion,
-                onRemove: _removeFromHistory);
-          }),
-        if (_suggestions.isNotEmpty)
-          ..._section("Popular searches", _suggestions, (QuerySuggestion item) {
-            return SuggestionRowView(
-                suggestion: item,
-                onTap: _completeSuggestion);
-          })
-      ],
+        child: Padding(
+      padding: const EdgeInsets.only(left: 12),
+      child: CustomScrollView(
+        slivers: [
+          if (_history.isNotEmpty)
+            ..._section(
+                Row(
+                  children: [
+                    const Text("Your searches"),
+                    const Spacer(),
+                    TextButton(
+                        onPressed: _clearHistory,
+                        child: const Text("Clear",
+                            style: TextStyle(color: AppTheme.nebula)))
+                  ],
+                ),
+                _history, (String item) {
+              return HistoryRowView(
+                  suggestion: item, onRemove: _removeFromHistory);
+            }),
+          if (_suggestions.isNotEmpty)
+            ..._section(
+                Row(
+                  children: const [Text("Popular searches"), Spacer()],
+                ),
+                _suggestions, (QuerySuggestion item) {
+              return SuggestionRowView(
+                  suggestion: item, onComplete: _completeSuggestion);
+            })
+        ],
+      ),
     ));
   }
 
   List<Widget> _section<Suggestion>(
-      String title, List<Suggestion> items, Function(Suggestion) rowBuilder) {
-    final sectionHeaderTextStyle =
-        Theme.of(context).textTheme.subtitle2?.copyWith(color: Colors.grey);
+      Widget title, List<Suggestion> items, Function(Suggestion) rowBuilder) {
     return [
       SliverAppBar(
-          titleTextStyle: sectionHeaderTextStyle,
-          title: Row(
-            children: [Text(title), Spacer()],
-          ),
+          titleSpacing: 0,
+          titleTextStyle: Theme.of(context).textTheme.subtitle2,
+          title: title,
           automaticallyImplyLeading: false),
       SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 0),
           sliver: SliverList(
               delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) {
