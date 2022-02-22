@@ -5,11 +5,15 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class PagedHitsGridView extends StatelessWidget {
   const PagedHitsGridView(
-      {Key? key, required this.pagingController, this.onHitClick})
+      {Key? key,
+      required this.pagingController,
+      this.onHitClick,
+      this.noItemsFound})
       : super(key: key);
 
   final PagingController<int, Product> pagingController;
   final Function(String)? onHitClick;
+  final WidgetBuilder? noItemsFound;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +27,7 @@ class PagedHitsGridView extends StatelessWidget {
         crossAxisCount: 2,
       ),
       builderDelegate: PagedChildBuilderDelegate<Product>(
+        noItemsFoundIndicatorBuilder: noItemsFound,
         itemBuilder: (context, item, index) => ProductCardView(
             product: item,
             imageAlignment: Alignment.bottomCenter,

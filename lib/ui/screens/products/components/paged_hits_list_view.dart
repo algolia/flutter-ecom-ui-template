@@ -5,11 +5,15 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 class PagedHitsListView extends StatelessWidget {
   const PagedHitsListView(
-      {Key? key, required this.pagingController, this.onHitClick})
+      {Key? key,
+      required this.pagingController,
+      this.onHitClick,
+      this.noItemsFound})
       : super(key: key);
 
   final PagingController<int, Product> pagingController;
   final Function(String)? onHitClick;
+  final WidgetBuilder? noItemsFound;
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +22,7 @@ class PagedHitsListView extends StatelessWidget {
       pagingController: pagingController,
       separatorBuilder: (context, index) => const SizedBox(height: 10),
       builderDelegate: PagedChildBuilderDelegate<Product>(
+        noItemsFoundIndicatorBuilder: noItemsFound,
         itemBuilder: (context, item, index) => ProductItemView(
             product: item,
             imageAlignment: Alignment.bottomCenter,
