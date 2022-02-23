@@ -80,53 +80,45 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
             backgroundColor: AppTheme.neutralLightest,
             titleSpacing: 0,
             elevation: 0,
-            title: _header()),
+            title: SearchHeaderView(
+              controller: searchTextController,
+              onSubmitted: _submitSearch,
+            )),
         body: Column(children: [
-          _body(),
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: CustomScrollView(
+              slivers: [
+                if (_history.isNotEmpty)
+                  ..._section(
+                      Row(
+                        children: [
+                          const Text("Your searches"),
+                          const Spacer(),
+                          TextButton(
+                              onPressed: _clearHistory,
+                              child: const Text("Clear",
+                                  style: TextStyle(color: AppTheme.nebula)))
+                        ],
+                      ),
+                      _history, (String item) {
+                    return HistoryRowView(
+                        suggestion: item, onRemove: _removeFromHistory);
+                  }),
+                if (_suggestions.isNotEmpty)
+                  ..._section(
+                      Row(
+                        children: const [Text("Popular searches"), Spacer()],
+                      ),
+                      _suggestions, (QuerySuggestion item) {
+                    return SuggestionRowView(
+                        suggestion: item, onComplete: _completeSuggestion);
+                  })
+              ],
+            ),
+          )),
         ]));
-  }
-
-  Widget _header() {
-    return SearchHeaderView(
-      controller: searchTextController,
-      onSubmitted: _submitSearch,
-    );
-  }
-
-  Widget _body() {
-    return Expanded(
-        child: Padding(
-      padding: const EdgeInsets.only(left: 12),
-      child: CustomScrollView(
-        slivers: [
-          if (_history.isNotEmpty)
-            ..._section(
-                Row(
-                  children: [
-                    const Text("Your searches"),
-                    const Spacer(),
-                    TextButton(
-                        onPressed: _clearHistory,
-                        child: const Text("Clear",
-                            style: TextStyle(color: AppTheme.nebula)))
-                  ],
-                ),
-                _history, (String item) {
-              return HistoryRowView(
-                  suggestion: item, onRemove: _removeFromHistory);
-            }),
-          if (_suggestions.isNotEmpty)
-            ..._section(
-                Row(
-                  children: const [Text("Popular searches"), Spacer()],
-                ),
-                _suggestions, (QuerySuggestion item) {
-              return SuggestionRowView(
-                  suggestion: item, onComplete: _completeSuggestion);
-            })
-        ],
-      ),
-    ));
   }
 
   List<Widget> _section<Suggestion>(
