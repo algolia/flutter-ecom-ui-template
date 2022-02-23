@@ -8,6 +8,8 @@ class AppTheme {
   static const Color darkPink = Color(0xFFAA086C);
   static const Color vividOrange = Color(0xFFE8600A);
   static const Color darkRed = Color(0xFFB00020);
+  static const Color neutralDark = Color(0XFF91929D);
+  static const Color neutralLightest = Color(0XFFF4F4F5);
 
   static ThemeData buildLightTheme() {
     const Color primaryColor = AppTheme.nebula;
@@ -33,6 +35,11 @@ class AppTheme {
           foregroundColor: secondaryColor,
           backgroundColor: Colors.white,
         ),
+        textTheme: TextTheme(
+            subtitle2: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: neutralDark)),
         textButtonTheme: TextButtonThemeData(
             style: TextButton.styleFrom(primary: secondaryColor)));
   }
