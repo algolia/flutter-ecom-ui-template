@@ -129,20 +129,18 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
           titleTextStyle: Theme.of(context).textTheme.subtitle2,
           title: title,
           automaticallyImplyLeading: false),
-      SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              final item = items[index];
-              return SizedBox(
-                  height: 50,
-                  child: InkWell(
-                      onTap: () => _submitSearch(item.toString()),
-                      child: rowBuilder(item)));
-            },
-            childCount: items.length,
-          )))
+      SliverList(
+          delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          final item = items[index];
+          return SizedBox(
+              height: 50,
+              child: InkWell(
+                  onTap: () => _submitSearch(item.toString()),
+                  child: rowBuilder(item)));
+        },
+        childCount: items.length,
+      ))
     ];
   }
 
