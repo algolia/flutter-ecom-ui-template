@@ -19,7 +19,6 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   final suggestionsRepository = SuggestionRepository();
   final searchTextController = TextEditingController();
 
-  final List<String> _history = ['jackets'];
   final List<QuerySuggestion> _suggestions = [];
 
   @override
@@ -33,20 +32,6 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     final received = await suggestionsRepository.getSuggestions(query);
     _suggestions.clear();
     setState(() => _suggestions.addAll(received));
-  }
-
-  void _addToHistory(String query) {
-    if (query.isEmpty) return;
-    _history.removeWhere((element) => element == query);
-    setState(() => _history.add(query));
-  }
-
-  void _removeFromHistory(String query) {
-    setState(() => _history.removeWhere((element) => element == query));
-  }
-
-  void _clearHistory() {
-    setState(() => _history.clear());
   }
 
   void _completeSuggestion(String suggestion) {
@@ -68,7 +53,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   }
 
   void _submitSearch(String query) {
-    _addToHistory(query);
+    setState(() => suggestionsRepository.addToHistory(query));
     _launchSearch(query);
   }
 
@@ -90,21 +75,21 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
             padding: const EdgeInsets.only(left: 12),
             child: CustomScrollView(
               slivers: [
-                if (_history.isNotEmpty)
+                if (suggestionsRepository.getHistory().isNotEmpty)
                   ..._section(
                       Row(
                         children: [
                           const Text("Your searches"),
                           const Spacer(),
                           TextButton(
-                              onPressed: _clearHistory,
+                              onPressed: () => setState(() => suggestionsRepository.clearHistory()),
                               child: const Text("Clear",
                                   style: TextStyle(color: AppTheme.nebula)))
                         ],
                       ),
-                      _history, (String item) {
+                      suggestionsRepository.getHistory(), (String item) {
                     return HistoryRowView(
-                        suggestion: item, onRemove: _removeFromHistory);
+                        suggestion: item, onRemove: (item) => setState(() => suggestionsRepository.removeFromHistory(item)));
                   }),
                 if (_suggestions.isNotEmpty)
                   ..._section(

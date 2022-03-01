@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 class HistoryRowView extends StatelessWidget {
-  const HistoryRowView(
-      {Key? key, required this.suggestion, this.onRemove})
+  const HistoryRowView({Key? key, required this.suggestion, this.onRemove})
       : super(key: key);
 
   final String suggestion;
@@ -18,9 +17,8 @@ class HistoryRowView extends StatelessWidget {
       Text(suggestion, style: const TextStyle(fontSize: 16)),
       const Spacer(),
       IconButton(
-            onPressed: () => onRemove?.call(suggestion),
-            icon: const Icon(Icons.close)
-      ),
+          onPressed: () => onRemove?.call(suggestion),
+          icon: const Icon(Icons.close)),
     ]);
   }
 }

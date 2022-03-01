@@ -15,7 +15,7 @@ class FirebaseClient {
       FirebaseFirestore.instance.collection('products');
 
   /// Get a product by ID.
-  Future<Product> get(String productID) async {
+  Future<Product> getProduct(String productID) async {
     final snapshot = await products.doc(productID).get();
     return Product.fromJson(snapshot.data() as Map<String, dynamic>);
   }
