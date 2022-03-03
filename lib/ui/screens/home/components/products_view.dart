@@ -3,19 +3,20 @@ import 'package:flutter_ecom_demo/model/product.dart';
 import 'package:flutter_ecom_demo/ui/app_theme.dart';
 import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
 
+typedef ProductWidgetBuilder = Widget Function(
+    BuildContext context, Product product);
+
 class ProductsView extends StatelessWidget {
   const ProductsView({
     Key? key,
     required this.title,
     required this.items,
-    this.onTap,
-    this.imageAlignment = Alignment.bottomCenter,
+    required this.productWidget,
   }) : super(key: key);
 
   final String title;
   final List<Product> items;
-  final Function(String)? onTap;
-  final Alignment imageAlignment;
+  final ProductWidgetBuilder productWidget;
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +32,7 @@ class ProductsView extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 itemCount: items.length,
                 itemBuilder: (BuildContext context, int index) {
-                  return ProductCardView(
-                      product: items[index],
-                      imageAlignment: imageAlignment,
-                      onTap: (objectID) => onTap?.call(objectID));
+                  return productWidget(context, items[index]);
                 },
                 separatorBuilder: (context, index) =>
                     const SizedBox(width: 10)))

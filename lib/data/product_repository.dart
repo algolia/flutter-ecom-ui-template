@@ -30,7 +30,7 @@ class ProductRepository {
 
   /// Get product by ID.
   Future<Product> getProduct(String productID) async {
-    return firebaseClient.get(productID);
+    return firebaseClient.getProduct(productID);
   }
 
   /// Get list of seasonal products.

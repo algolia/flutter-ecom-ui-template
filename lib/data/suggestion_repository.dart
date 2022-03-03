@@ -19,6 +19,8 @@ class SuggestionRepository {
       Credentials.searchOnlyKey,
       Credentials.suggestionsIndex);
 
+  final List<String> _history = ['jackets'];
+
   /// Get suggestions for a query.
   Future<List<QuerySuggestion>> getSuggestions(Query query) async {
     final response = await _client.search(query);
@@ -26,4 +28,23 @@ class SuggestionRepository {
     return List<QuerySuggestion>.from(
         hits.map((hit) => QuerySuggestion.fromJson(hit)));
   }
+
+  List<String> getHistory() {
+    return _history;
+  }
+
+  void addToHistory(String query) {
+    if (query.isEmpty) return;
+    _history.removeWhere((element) => element == query);
+    _history.add(query);
+  }
+
+  void removeFromHistory(String query) {
+     _history.removeWhere((element) => element == query);
+  }
+
+  void clearHistory() {
+    _history.clear();
+  }
+
 }

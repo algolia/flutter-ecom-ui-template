@@ -14,25 +14,23 @@ class SearchHeaderView extends StatelessWidget {
       children: [
         IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back)
-        ),
+            icon: const Icon(Icons.arrow_back)),
         Expanded(
           child: TextField(
             controller: controller,
             autofocus: true,
             onSubmitted: onSubmitted,
             decoration: const InputDecoration(
-              border: InputBorder.none,
-              hintText: "Search products, articles, faq, ..."),
+                border: InputBorder.none,
+                hintText: "Search products, articles, faq, ..."),
           ),
         ),
         if (controller.text.isNotEmpty)
           IconButton(
-            iconSize: 34,
-                  onPressed: controller.clear,
-                  icon: const Icon(Icons.clear),
-                  color: AppTheme.darkBlue
-              ),
+              iconSize: 34,
+              onPressed: controller.clear,
+              icon: const Icon(Icons.clear),
+              color: AppTheme.darkBlue),
         const SizedBox(width: 0)
       ],
     );

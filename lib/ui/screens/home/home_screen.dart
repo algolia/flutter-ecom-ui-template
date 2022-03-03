@@ -6,6 +6,7 @@ import 'package:flutter_ecom_demo/ui/screens/home/components/home_banner_view.da
 import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/autocomplete_screen.dart';
 import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
+import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
 
 import 'components/products_view.dart';
 
@@ -67,6 +68,14 @@ class _HomeScreenState extends State<HomeScreen> {
           pageBuilder: (_, __, ___) =>  const AutocompleteScreen(),
           fullscreenDialog: true,
         ));
+  }
+
+  Widget _productView(BuildContext context, Product product) {
+    return ProductCardView(
+        product: product,
+        imageAlignment: Alignment.bottomCenter,
+        onTap: (objectID) => _presentProductPage(context, objectID)
+    );
   }
 
   @override
@@ -133,19 +142,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ProductsView(
                         title: 'New in shoes',
                         items: _newInShoes,
-                        imageAlignment: Alignment.bottomCenter,
-                        onTap: (objectID) =>
-                            _presentProductPage(context, objectID)),
+                        productWidget: _productView),
                     ProductsView(
                         title: 'Spring/Summer 2021',
                         items: _seasonal,
-                        onTap: (objectID) =>
-                            _presentProductPage(context, objectID)),
+                        productWidget: _productView),
                     ProductsView(
                         title: 'Recommended for you',
                         items: _recommended,
-                        onTap: (objectID) =>
-                            _presentProductPage(context, objectID)),
+                        productWidget: _productView),
                   ],
                 ),
               ),

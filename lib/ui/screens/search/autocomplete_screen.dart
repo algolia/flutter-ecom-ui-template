@@ -19,7 +19,6 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   final suggestionsRepository = SuggestionRepository();
   final searchTextController = TextEditingController();
 
-  final List<String> _history = ['jackets'];
   final List<QuerySuggestion> _suggestions = [];
 
   @override
@@ -33,20 +32,6 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     final received = await suggestionsRepository.getSuggestions(query);
     _suggestions.clear();
     setState(() => _suggestions.addAll(received));
-  }
-
-  void _addToHistory(String query) {
-    if (query.isEmpty) return;
-    _history.removeWhere((element) => element == query);
-    setState(() => _history.add(query));
-  }
-
-  void _removeFromHistory(String query) {
-    setState(() => _history.removeWhere((element) => element == query));
-  }
-
-  void _clearHistory() {
-    setState(() => _history.clear());
   }
 
   void _completeSuggestion(String suggestion) {
@@ -68,7 +53,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   }
 
   void _submitSearch(String query) {
-    _addToHistory(query);
+    setState(() => suggestionsRepository.addToHistory(query));
     _launchSearch(query);
   }
 
@@ -80,53 +65,45 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
             backgroundColor: AppTheme.neutralLightest,
             titleSpacing: 0,
             elevation: 0,
-            title: _header()),
+            title: SearchHeaderView(
+              controller: searchTextController,
+              onSubmitted: _submitSearch,
+            )),
         body: Column(children: [
-          _body(),
+          Expanded(
+              child: Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: CustomScrollView(
+              slivers: [
+                if (suggestionsRepository.getHistory().isNotEmpty)
+                  ..._section(
+                      Row(
+                        children: [
+                          const Text("Your searches"),
+                          const Spacer(),
+                          TextButton(
+                              onPressed: () => setState(() => suggestionsRepository.clearHistory()),
+                              child: const Text("Clear",
+                                  style: TextStyle(color: AppTheme.nebula)))
+                        ],
+                      ),
+                      suggestionsRepository.getHistory(), (String item) {
+                    return HistoryRowView(
+                        suggestion: item, onRemove: (item) => setState(() => suggestionsRepository.removeFromHistory(item)));
+                  }),
+                if (_suggestions.isNotEmpty)
+                  ..._section(
+                      Row(
+                        children: const [Text("Popular searches"), Spacer()],
+                      ),
+                      _suggestions, (QuerySuggestion item) {
+                    return SuggestionRowView(
+                        suggestion: item, onComplete: _completeSuggestion);
+                  })
+              ],
+            ),
+          )),
         ]));
-  }
-
-  Widget _header() {
-    return SearchHeaderView(
-      controller: searchTextController,
-      onSubmitted: _submitSearch,
-    );
-  }
-
-  Widget _body() {
-    return Expanded(
-        child: Padding(
-      padding: const EdgeInsets.only(left: 12),
-      child: CustomScrollView(
-        slivers: [
-          if (_history.isNotEmpty)
-            ..._section(
-                Row(
-                  children: [
-                    const Text("Your searches"),
-                    const Spacer(),
-                    TextButton(
-                        onPressed: _clearHistory,
-                        child: const Text("Clear",
-                            style: TextStyle(color: AppTheme.nebula)))
-                  ],
-                ),
-                _history, (String item) {
-              return HistoryRowView(
-                  suggestion: item, onRemove: _removeFromHistory);
-            }),
-          if (_suggestions.isNotEmpty)
-            ..._section(
-                Row(
-                  children: const [Text("Popular searches"), Spacer()],
-                ),
-                _suggestions, (QuerySuggestion item) {
-              return SuggestionRowView(
-                  suggestion: item, onComplete: _completeSuggestion);
-            })
-        ],
-      ),
-    ));
   }
 
   List<Widget> _section<Suggestion>(
@@ -137,20 +114,18 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
           titleTextStyle: Theme.of(context).textTheme.subtitle2,
           title: title,
           automaticallyImplyLeading: false),
-      SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          sliver: SliverList(
-              delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-              final item = items[index];
-              return SizedBox(
-                  height: 50,
-                  child: InkWell(
-                      onTap: () => _submitSearch(item.toString()),
-                      child: rowBuilder(item)));
-            },
-            childCount: items.length,
-          )))
+      SliverList(
+          delegate: SliverChildBuilderDelegate(
+        (BuildContext context, int index) {
+          final item = items[index];
+          return SizedBox(
+              height: 50,
+              child: InkWell(
+                  onTap: () => _submitSearch(item.toString()),
+                  child: rowBuilder(item)));
+        },
+        childCount: items.length,
+      ))
     ];
   }
 
