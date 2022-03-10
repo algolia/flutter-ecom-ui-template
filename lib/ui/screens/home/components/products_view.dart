@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/model/product.dart';
 import 'package:flutter_ecom_demo/ui/app_theme.dart';
-import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
+import 'package:flutter_ecom_demo/ui/screens/home/components/hits_list_view.dart';
 
 typedef ProductWidgetBuilder = Widget Function(
     BuildContext context, Product product);
@@ -27,15 +27,10 @@ class ProductsView extends StatelessWidget {
         Container(
             margin: const EdgeInsets.symmetric(vertical: 8.0),
             height: 200.0,
-            child: ListView.separated(
-                padding: const EdgeInsets.all(8),
-                scrollDirection: Axis.horizontal,
-                itemCount: items.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return productWidget(context, items[index]);
-                },
-                separatorBuilder: (context, index) =>
-                    const SizedBox(width: 10)))
+            child: HitsListView(
+                items: items,
+                productWidget: productWidget,
+                scrollDirection: Axis.horizontal))
       ],
     );
   }
