@@ -13,6 +13,8 @@ class NoResultsView extends StatelessWidget {
           Text("Try the following:",
               style: Theme.of(context).textTheme.bodyText1),
           const SizedBox(height: 4),
+          Text("• Check your spelling",
+              style: Theme.of(context).textTheme.bodyText2),
           Text("• Searching again using more general terms",
               style: Theme.of(context).textTheme.bodyText2),
         ],
