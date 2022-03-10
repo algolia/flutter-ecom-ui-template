@@ -21,6 +21,7 @@ class SWApp extends StatelessWidget {
       title: 'Spencer & Williams Fashion',
       theme: AppTheme.buildLightTheme(),
       home: const HomeScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
