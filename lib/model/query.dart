@@ -1,3 +1,5 @@
+import 'package:algolia/algolia.dart';
+
 class Query {
   Query(this.query, {this.ruleContexts, this.page, this.hitsPerPage});
 
@@ -16,6 +18,26 @@ class Query {
     return queryParam.entries
         .map((e) => '${e.key}=${Uri.encodeComponent(e.value ?? '')}')
         .join('&');
+  }
+
+  AlgoliaQuery apply(AlgoliaQuery query) {
+    String? queryText = this.query;
+    if (queryText != null) {
+      query = query.query(queryText);
+    }
+    int? page = this.page;
+    if (page != null) {
+      query = query.setPage(page);
+    }
+    int? hitsPerPage = this.hitsPerPage;
+    if (hitsPerPage != null) {
+      query = query.setHitsPerPage(hitsPerPage);
+    }
+    List<String>? ruleContexts = this.ruleContexts;
+    if (ruleContexts != null) {
+      query = query.setRuleContexts(ruleContexts);
+    }
+    return query;
   }
 
   @override

@@ -1,5 +1,5 @@
+import 'package:algolia/algolia.dart';
 import 'package:flutter_ecom_demo/credentials.dart';
-import 'package:flutter_ecom_demo/data/algolia_client.dart';
 import 'package:flutter_ecom_demo/model/query.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 
@@ -14,17 +14,19 @@ class SuggestionRepository {
     return _instance;
   }
 
-  final AlgoliaAPIClient _client = AlgoliaAPIClient(
-      Credentials.applicationID,
-      Credentials.searchOnlyKey,
-      Credentials.suggestionsIndex);
+  final Algolia _algoliaClient = Algolia.init(
+      applicationId: Credentials.applicationID,
+      apiKey: Credentials.searchOnlyKey);
 
   final List<String> _history = ['jackets'];
 
   /// Get suggestions for a query.
   Future<List<QuerySuggestion>> getSuggestions(Query query) async {
-    final response = await _client.search(query);
-    final hits = response["hits"];
+    AlgoliaQuery algoliaQuery =
+        _algoliaClient.instance.index(Credentials.suggestionsIndex);
+    algoliaQuery = query.apply(algoliaQuery);
+    AlgoliaQuerySnapshot snap = await algoliaQuery.getObjects();
+    final hits = snap.toMap()["hits"];
     return List<QuerySuggestion>.from(
         hits.map((hit) => QuerySuggestion.fromJson(hit)));
   }
@@ -40,11 +42,10 @@ class SuggestionRepository {
   }
 
   void removeFromHistory(String query) {
-     _history.removeWhere((element) => element == query);
+    _history.removeWhere((element) => element == query);
   }
 
   void clearHistory() {
     _history.clear();
   }
-
 }
