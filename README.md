@@ -1,4 +1,4 @@
-# Fluter Ecommerce UI Template
+# Flutter Ecommerce UI Template
 
 Get inspiration and speed up your storefront implementation with this Flutter starter kit that helps you rapidly build an attractive, first-class search and discovery experience.
 
