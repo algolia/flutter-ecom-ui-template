@@ -34,6 +34,10 @@ dependencies:
   infinite_scroll_pagination: ^3.1.0
   algolia: ^1.1.0+2
 
+  logging: 1.0.2
+  algolia_helper:
+    path: /path/to/algoliasearch_helper_dart
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

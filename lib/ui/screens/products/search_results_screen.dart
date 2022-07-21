@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
+import 'package:flutter_ecom_demo/data/product_searcher.dart';
 import 'package:flutter_ecom_demo/model/product.dart';
 import 'package:flutter_ecom_demo/model/query.dart';
 import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
@@ -21,7 +21,7 @@ class SearchResultsScreen extends StatefulWidget {
 }
 
 class _SearchResultsScreen extends State<SearchResultsScreen> {
-  final _productRepository = ProductRepository();
+  final ProductsSearcher _productsSearcher = ProductsSearcher();
 
   Query get _query => widget.query;
   int _resultsCount = 0;
@@ -32,26 +32,22 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
 
   @override
   void initState() {
-    _pagingController.addPageRequestListener((pageKey) {
-      _fetchPage(pageKey);
-    });
+    _setupSearch();
+    _pagingController.addPageRequestListener((pageKey) => _fetchPage(pageKey));
     super.initState();
   }
 
-  Future<void> _fetchPage(int pageKey) async {
-    _query.page = pageKey;
-    try {
-      final response = await _productRepository.searchProducts(_query);
-      final hits = response.hits ?? List.empty();
-      final isLastPage = response.page == response.nbPages;
-      final nextPageKey = isLastPage ? null : pageKey + 1;
-      _pagingController.appendPage(hits, nextPageKey);
-      setState(() {
-        _resultsCount = response.nbHits?.toInt() ?? 0;
-      });
-    } catch (error) {
-      _pagingController.error = error;
-    }
+  void _setupSearch() {
+    _productsSearcher.paginate(
+        onNextPage: (page) {
+          _pagingController.appendPage(page.data, page.nextPageKey);
+          setState(() => _resultsCount = page.nbHits);
+        },
+        onError: (error) => _pagingController.error = error);
+  }
+
+  void _fetchPage(int pageKey) {
+    _productsSearcher.page(pageKey);
   }
 
   @override
@@ -94,11 +90,11 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
   }
 
   void _presentProductPage(BuildContext context, String productID) {
-    _productRepository.getProduct(productID).then((product) => Navigator.push(
+    _productsSearcher.getById(productID).then((product) => Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => ProductScreen(product: product),
-        )));
+            builder: (BuildContext context) =>
+                ProductScreen(product: product))));
   }
 
   Widget _noResults(BuildContext context) {

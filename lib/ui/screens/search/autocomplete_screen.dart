@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
 import 'package:flutter_ecom_demo/model/query.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/search_results_screen.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/components/history_row_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/components/search_header_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/search/components/suggestion_row_view.dart';
+
+import '../../../data/suggestion_searcher.dart';
 import '../../app_theme.dart';
+import 'components/suggestion_row_view.dart';
 
 class AutocompleteScreen extends StatefulWidget {
   const AutocompleteScreen({Key? key}) : super(key: key);
@@ -16,10 +17,8 @@ class AutocompleteScreen extends StatefulWidget {
 }
 
 class _AutocompleteScreenState extends State<AutocompleteScreen> {
-  final suggestionsRepository = SuggestionRepository();
   final searchTextController = TextEditingController();
-
-  final List<QuerySuggestion> _suggestions = [];
+  final suggestionSearcher = SuggestionSearcher();
 
   @override
   void initState() {
@@ -28,10 +27,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   }
 
   void _onSearchTextChanged() async {
-    final query = Query(searchTextController.text);
-    final received = await suggestionsRepository.getSuggestions(query);
-    _suggestions.clear();
-    setState(() => _suggestions.addAll(received));
+    suggestionSearcher.query(searchTextController.text);
   }
 
   void _completeSuggestion(String suggestion) {
@@ -53,7 +49,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   }
 
   void _submitSearch(String query) {
-    setState(() => suggestionsRepository.addToHistory(query));
+    setState(() => suggestionSearcher.addToHistory(query));
     _launchSearch(query);
   }
 
@@ -73,37 +69,49 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
           Expanded(
               child: Padding(
             padding: const EdgeInsets.only(left: 12),
-            child: CustomScrollView(
-              slivers: [
-                if (suggestionsRepository.getHistory().isNotEmpty)
-                  ..._section(
-                      Row(
-                        children: [
-                          const Text("Your searches"),
-                          const Spacer(),
-                          TextButton(
-                              onPressed: () => setState(() => suggestionsRepository.clearHistory()),
-                              child: const Text("Clear",
-                                  style: TextStyle(color: AppTheme.nebula)))
-                        ],
-                      ),
-                      suggestionsRepository.getHistory(), (String item) {
-                    return HistoryRowView(
-                        suggestion: item, onRemove: (item) => setState(() => suggestionsRepository.removeFromHistory(item)));
-                  }),
-                if (_suggestions.isNotEmpty)
-                  ..._section(
-                      Row(
-                        children: const [Text("Popular searches"), Spacer()],
-                      ),
-                      _suggestions, (QuerySuggestion item) {
-                    return SuggestionRowView(
-                        suggestion: item, onComplete: _completeSuggestion);
-                  })
-              ],
-            ),
+            child: _buildSuggestions(),
           )),
         ]));
+  }
+
+  Widget _buildSuggestions() {
+    return StreamBuilder<List<QuerySuggestion>>(
+        stream: suggestionSearcher.suggestions,
+        builder: (context, snapshot) {
+          final suggestions = snapshot.data ?? [];
+          return CustomScrollView(
+            slivers: [
+              if (suggestionSearcher.history.isNotEmpty)
+                ..._section(
+                    Row(
+                      children: [
+                        const Text("Your searches"),
+                        const Spacer(),
+                        TextButton(
+                            onPressed: () => setState(
+                                () => suggestionSearcher.clearHistory()),
+                            child: const Text("Clear",
+                                style: TextStyle(color: AppTheme.nebula)))
+                      ],
+                    ),
+                    suggestionSearcher.history, (String item) {
+                  return HistoryRowView(
+                      suggestion: item,
+                      onRemove: (item) => setState(
+                          () => suggestionSearcher.removeFromHistory(item)));
+                }),
+              if (suggestions.isNotEmpty)
+                ..._section(
+                    Row(
+                      children: const [Text("Popular searches"), Spacer()],
+                    ),
+                    suggestions, (QuerySuggestion item) {
+                  return SuggestionRowView(
+                      suggestion: item, onComplete: _completeSuggestion);
+                })
+            ],
+          );
+        });
   }
 
   List<Widget> _section<Suggestion>(
@@ -132,6 +140,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   @override
   void dispose() {
     searchTextController.dispose();
+    suggestionSearcher.dispose();
     super.dispose();
   }
 }
