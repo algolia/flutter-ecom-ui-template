@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:algolia_helper/algolia_helper.dart';
+import 'package:algolia_helper_flutter/algolia.dart';
 
 import '../credentials.dart';
 import '../model/query_suggestion.dart';
 
 class SuggestionSearcher {
-  final AlgoliaHelper _helper = AlgoliaHelper.create(
+  final _searcher = HitsSearcher(
       applicationID: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey,
       indexName: Credentials.suggestionsIndex);
@@ -14,12 +14,12 @@ class SuggestionSearcher {
   final List<String> history = ['jackets'];
 
   Stream<List<QuerySuggestion>> get suggestions =>
-      _helper.responses.map((response) => response.hits
+      _searcher.responses.map((response) => response.hits
           .map((hit) => QuerySuggestion.fromJson(hit.json))
           .toList());
 
   void query(String query) {
-    _helper.query(query);
+    _searcher.query(query);
   }
 
   void addToHistory(String query) {
@@ -37,6 +37,6 @@ class SuggestionSearcher {
   }
 
   void dispose() {
-    _helper.dispose();
+    _searcher.dispose();
   }
 }

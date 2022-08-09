@@ -1,4 +1,4 @@
-import 'package:algolia_helper/algolia_helper.dart';
+import 'package:algolia_helper_flutter/algolia.dart';
 
 class Page<T> {
   Page(this.data, this.isLastPage, this.nextPageKey, this.nbHits);

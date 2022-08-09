@@ -1,19 +1,22 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/ui/app_theme.dart';
 import 'package:flutter_ecom_demo/ui/screens/home/home_screen.dart';
 import 'package:logging/logging.dart';
 
 void main() async {
+  _setupLogging();
   WidgetsFlutterBinding.ensureInitialized();
-  _loggingConfig();
   runApp(const SWApp());
 }
 
-void _loggingConfig() {
-  Logger.root.level = Level.ALL; // defaults to Level.INFO
+void _setupLogging() {
+  Logger.root.level = Level.ALL;
   Logger.root.onRecord.listen((record) {
-    //print(
-    //    '[${record.loggerName}] ${record.level.name}: ${record.time}: ${record.message}');
+    if (kDebugMode) {
+      print(
+          '[${record.loggerName}/${record.level.name}]: ${record.time}: ${record.message}');
+    }
   });
 }
 

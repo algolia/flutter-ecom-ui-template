@@ -35,8 +35,12 @@ dependencies:
   algolia: ^1.1.0+2
 
   logging: 1.0.2
-  algolia_helper:
-    path: /path/to/algoliasearch_helper_dart
+  algolia_helper_flutter:
+    path: /Users/mouaad.aallam/Developer/Algolia/flutter/algoliasearch_helper_dart/helper_flutter
+
+dependency_overrides:
+  algolia_helper_dart:
+    path: /Users/mouaad.aallam/Developer/Algolia/flutter/algoliasearch_helper_dart/helper_dart
 
 dev_dependencies:
   flutter_test:

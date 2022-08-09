@@ -43,11 +43,10 @@ class HighlightedTextView extends StatelessWidget {
       append(highlighted.substring(prev), isInverted);
     }
 
-    final spans = strings
+    final List<TextSpan> spans = strings
         .map((string) => TextSpan(
             text: string.string,
-            style:
-                string.isHighlighted ? highlightedTextStyle : regularTextStyle))
+            style: string.isHighlighted ? highlightedTextStyle : regularTextStyle))
         .toList();
 
     return RichText(
