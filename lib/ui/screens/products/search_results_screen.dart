@@ -59,7 +59,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                   if (snapshot.hasData) {
                     final data = snapshot.data!;
                     return SearchHeaderView(
-                        query: data.query ?? "", resultsCount: data.nbHits);
+                        query: data.query, resultsCount: data.nbHits);
                   } else {
                     return Container();
                   }

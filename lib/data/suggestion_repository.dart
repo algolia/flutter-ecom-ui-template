@@ -2,6 +2,7 @@ import 'package:algolia/algolia.dart';
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter_ecom_demo/credentials.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
+import 'package:rxdart/rxdart.dart';
 
 /// Query suggestions data repository.
 class SuggestionRepository {
@@ -19,7 +20,7 @@ class SuggestionRepository {
       apiKey: Credentials.searchOnlyKey,
       indexName: Credentials.suggestionsIndex);
 
-  final List<String> _history = ['jackets'];
+  final BehaviorSubject<List<String>> _history = BehaviorSubject.seeded(['jackets']);
 
   void searchSuggestions(String query) {
     _suggestionSearcher.query(query);
@@ -31,21 +32,23 @@ class SuggestionRepository {
         return response.hits.map((h) => QuerySuggestion.fromHit(h)).toList();
       });
 
-  List<String> getHistory() {
-    return _history;
-  }
+  Stream<List<String>> get history => _history;
 
   void addToHistory(String query) {
     if (query.isEmpty) return;
-    _history.removeWhere((element) => element == query);
-    _history.add(query);
+    final _current = _history.value;
+    _current.removeWhere((element) => element == query);
+    _current.add(query);
+    _history.sink.add(_current);
   }
 
   void removeFromHistory(String query) {
-    _history.removeWhere((element) => element == query);
+    final _current = _history.value;
+    _current.removeWhere((element) => element == query);
+    _history.sink.add(_current);
   }
 
   void clearHistory() {
-    _history.clear();
+    _history.sink.add([]);
   }
 }

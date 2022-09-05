@@ -31,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
         context,
         PageRouteBuilder(
-          pageBuilder: (_, __, ___) =>  const AutocompleteScreen(),
+          pageBuilder: (_, __, ___) => const AutocompleteScreen(),
           fullscreenDialog: true,
         ));
   }
@@ -40,8 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return ProductCardView(
         product: product,
         imageAlignment: Alignment.bottomCenter,
-        onTap: (objectID) => _presentProductPage(context, objectID)
-    );
+        onTap: (objectID) => _presentProductPage(context, objectID));
   }
 
   @override
@@ -96,32 +95,33 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         body: SafeArea(
+            bottom: false,
             child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const HomeBannerView(),
-              Padding(
-                padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
-                child: Column(
-                  children: [
-                    ProductsView(
-                        title: 'New in shoes',
-                        items: _productRepository.shoes,
-                        productWidget: _productView),
-                    ProductsView(
-                        title: 'Spring/Summer 2021',
-                        items: _productRepository.seasonalProducts,
-                        productWidget: _productView),
-                    ProductsView(
-                        title: 'Recommended for you',
-                        items: _productRepository.recommendedProducts,
-                        productWidget: _productView),
-                  ],
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const HomeBannerView(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+                    child: Column(
+                      children: [
+                        ProductsView(
+                            title: 'New in shoes',
+                            items: _productRepository.shoes,
+                            productWidget: _productView),
+                        ProductsView(
+                            title: 'Spring/Summer 2021',
+                            items: _productRepository.seasonalProducts,
+                            productWidget: _productView),
+                        ProductsView(
+                            title: 'Recommended for you',
+                            items: _productRepository.recommendedProducts,
+                            productWidget: _productView),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        )));
+            )));
   }
 }

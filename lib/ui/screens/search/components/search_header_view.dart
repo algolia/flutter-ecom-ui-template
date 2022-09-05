@@ -12,9 +12,6 @@ class SearchHeaderView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back)),
         Expanded(
           child: TextField(
             controller: controller,
@@ -31,7 +28,7 @@ class SearchHeaderView extends StatelessWidget {
               onPressed: controller.clear,
               icon: const Icon(Icons.clear),
               color: AppTheme.darkBlue),
-        const SizedBox(width: 0)
+        const SizedBox(width: 8)
       ],
     );
   }

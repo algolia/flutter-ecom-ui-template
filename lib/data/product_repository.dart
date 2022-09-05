@@ -23,21 +23,21 @@ class ProductRepository {
   final _shoesSearcher = HitsSearcher.create(
       applicationID: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey,
-      state: SearchState(indexName: Credentials.hitsIndex, query: 'shoes'));
+      state: const SearchState(indexName: Credentials.hitsIndex, query: 'shoes'));
 
   final _seasonalProductsSearcher = HitsSearcher.create(
       applicationID: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey,
-      state: SearchState(
+      state: const SearchState(
           indexName: Credentials.hitsIndex,
           ruleContexts: ['home-spring-summer-2021']));
 
   final _recommendedProductsSearcher = HitsSearcher.create(
       applicationID: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey,
-      state: SearchState(indexName: Credentials.hitsIndex, query: 'jacket'));
+      state: const SearchState(indexName: Credentials.hitsIndex, query: 'jacket'));
 
-  final Algolia _algoliaClient = Algolia.init(
+  final Algolia _algoliaClient = const Algolia.init(
       applicationId: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey);
 
