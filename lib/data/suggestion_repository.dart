@@ -1,6 +1,6 @@
 import 'package:algolia/algolia.dart';
+import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter_ecom_demo/credentials.dart';
-import 'package:flutter_ecom_demo/model/query.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 
 /// Query suggestions data repository.
@@ -14,22 +14,22 @@ class SuggestionRepository {
     return _instance;
   }
 
-  final Algolia _algoliaClient = Algolia.init(
-      applicationId: Credentials.applicationID,
-      apiKey: Credentials.searchOnlyKey);
+  final _suggestionSearcher = HitsSearcher(
+      applicationID: Credentials.applicationID,
+      apiKey: Credentials.searchOnlyKey,
+      indexName: Credentials.suggestionsIndex);
 
   final List<String> _history = ['jackets'];
 
-  /// Get suggestions for a query.
-  Future<List<QuerySuggestion>> getSuggestions(Query query) async {
-    AlgoliaQuery algoliaQuery =
-        _algoliaClient.instance.index(Credentials.suggestionsIndex);
-    algoliaQuery = query.apply(algoliaQuery);
-    AlgoliaQuerySnapshot snap = await algoliaQuery.getObjects();
-    final hits = snap.toMap()["hits"];
-    return List<QuerySuggestion>.from(
-        hits.map((hit) => QuerySuggestion.fromJson(hit)));
+  void searchSuggestions(String query) {
+    _suggestionSearcher.query(query);
   }
+
+  /// Get suggestions for a query.
+  Stream<List<QuerySuggestion>> get suggestions =>
+      _suggestionSearcher.responses.map((response) {
+        return response.hits.map((h) => QuerySuggestion.fromHit(h)).toList();
+      });
 
   List<String> getHistory() {
     return _history;

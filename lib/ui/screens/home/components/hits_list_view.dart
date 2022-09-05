@@ -10,19 +10,29 @@ class HitsListView extends StatelessWidget {
       this.scrollDirection = Axis.vertical})
       : super(key: key);
 
-  final List<Product> items;
+  final Stream<List<Product>> items;
   final ProductWidgetBuilder productWidget;
   final Axis scrollDirection;
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-        padding: const EdgeInsets.all(8),
-        scrollDirection: scrollDirection,
-        itemCount: items.length,
-        itemBuilder: (BuildContext context, int index) {
-          return productWidget(context, items[index]);
-        },
-        separatorBuilder: (context, index) => const SizedBox(width: 10));
+    return StreamBuilder<List<Product>>(
+      stream: items,
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final products = snapshot.data ?? [];
+          return ListView.separated(
+              padding: const EdgeInsets.all(8),
+              scrollDirection: scrollDirection,
+              itemCount: products.length,
+              itemBuilder: (BuildContext context, int index) {
+                return productWidget(context, products[index]);
+              },
+              separatorBuilder: (context, index) => const SizedBox(width: 10));
+        } else {
+          return const LinearProgressIndicator();
+        }
+      },
+    );
   }
 }

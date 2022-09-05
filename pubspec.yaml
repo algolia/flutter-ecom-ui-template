@@ -32,7 +32,7 @@ dependencies:
 
   cupertino_icons: ^1.0.2
   infinite_scroll_pagination: ^3.1.0
-  algolia: ^1.1.0+2
+  algolia_helper_flutter: ^0.1.0
 
 dev_dependencies:
   flutter_test:

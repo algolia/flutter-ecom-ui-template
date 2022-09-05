@@ -15,7 +15,7 @@ class ProductsView extends StatelessWidget {
   }) : super(key: key);
 
   final String title;
-  final List<Product> items;
+  final Stream<List<Product>> items;
   final ProductWidgetBuilder productWidget;
 
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/model/query.dart';
 import 'package:flutter_ecom_demo/ui/screens/home/components/home_banner_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/autocomplete_screen.dart';
@@ -19,39 +18,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _productRepository = ProductRepository();
-
-  List<Product> _newInShoes = [];
-  List<Product> _seasonal = [];
-  List<Product> _recommended = [];
-
-  @override
-  void initState() {
-    super.initState();
-    setupLatest();
-    setupSeasonal();
-    setupRecommended();
-  }
-
-  Future<void> setupLatest() async {
-    final shoes = await _productRepository.getProducts(Query('shoes'));
-    setState(() {
-      _newInShoes = shoes;
-    });
-  }
-
-  Future<void> setupSeasonal() async {
-    final products = await _productRepository.getSeasonalProducts();
-    setState(() {
-      _seasonal = products;
-    });
-  }
-
-  Future<void> setupRecommended() async {
-    final products = await _productRepository.getProducts(Query('jacket'));
-    setState(() {
-      _recommended = products;
-    });
-  }
 
   void _presentProductPage(BuildContext context, String productID) {
     _productRepository.getProduct(productID).then((product) => Navigator.push(
@@ -141,15 +107,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     ProductsView(
                         title: 'New in shoes',
-                        items: _newInShoes,
+                        items: _productRepository.shoes,
                         productWidget: _productView),
                     ProductsView(
                         title: 'Spring/Summer 2021',
-                        items: _seasonal,
+                        items: _productRepository.seasonalProducts,
                         productWidget: _productView),
                     ProductsView(
                         title: 'Recommended for you',
-                        items: _recommended,
+                        items: _productRepository.recommendedProducts,
                         productWidget: _productView),
                   ],
                 ),
