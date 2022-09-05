@@ -67,6 +67,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
           onSubmitted: _submitSearch,
         ),
       ),
+      SliverToBoxAdapter(child: SizedBox(height: 10,)),
       ..._section(
           Row(
             children: [
