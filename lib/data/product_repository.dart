@@ -1,13 +1,31 @@
 import 'package:algolia/algolia.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_ecom_demo/credentials.dart';
 import 'package:flutter_ecom_demo/model/product.dart';
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
-
-import '../model/page.dart';
+import '../model/page.dart' as ecom_page;
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 /// Products data repository.
-class ProductRepository {
-  ProductRepository._internal();
+class ProductRepository extends ChangeNotifier {
+
+  late FacetList _facetList;
+
+  final PagingController<int, Product> pagingController =
+  PagingController(firstPageKey: 0);
+
+  ProductRepository._internal() {
+    _facetList = FacetList(searcher: _hitsSearcher, filterState: _filterState, attribute: "brand");
+    pagingController.addPageRequestListener((pageKey) {
+      search((state) => state.copyWith(page: pageKey));
+    });
+    searchPage.listen((page) {
+      pagingController.appendPage(page.items, page.nextPageKey);
+    }).onError((error) {
+      pagingController.error = error;
+    });
+    _hitsSearcher.connectFilterState(_filterState);
+  }
 
   static final ProductRepository _instance = ProductRepository._internal();
 
@@ -19,6 +37,8 @@ class ProductRepository {
       applicationID: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey,
       indexName: Credentials.hitsIndex);
+
+  final _filterState = FilterState();
 
   final _shoesSearcher = HitsSearcher.create(
       applicationID: Credentials.applicationID,
@@ -46,6 +66,16 @@ class ProductRepository {
     _hitsSearcher.applyState(query);
   }
 
+  void toggleBrand(String brand) {
+    _facetList.toggle(brand);
+  }
+
+  void selectIndexName(String indexName) {
+    _hitsSearcher.applyState((state) => state.copyWith(indexName: indexName));
+  }
+
+  String get selectedIndexName => _hitsSearcher.snapshot().indexName;
+
   /// Get stream of shoes products.
   Stream<List<Product>> get shoes => _shoesSearcher.responses.map(
       (response) => response.hits.map((hit) => Product.fromJson(hit)).toList());
@@ -60,10 +90,10 @@ class ProductRepository {
       _recommendedProductsSearcher.responses.map((response) =>
           response.hits.map((hit) => Product.fromJson(hit)).toList());
 
-  Stream<Page<Product>> get searchPage => _hitsSearcher.responses.map((response) {
+  Stream<ecom_page.Page<Product>> get searchPage => _hitsSearcher.responses.map((response) {
         final isLastPage = response.page == response.nbPages;
         final nextPageKey = isLastPage ? null : response.page + 1;
-        return Page(
+        return ecom_page.Page(
             response.hits.map((h) => Product.fromJson(h)).toList(), nextPageKey);
       });
 
@@ -71,6 +101,8 @@ class ProductRepository {
 
   Stream<List<Product>> get products => _hitsSearcher.responses.map(
       (response) => response.hits.map((hit) => Product.fromJson(hit)).toList());
+
+  Stream<List<SelectableFacet>> get brandFacets => _facetList.facets;
 
   /// Get product by ID.
   Future<Product> getProduct(String productID) async {

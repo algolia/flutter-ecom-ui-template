@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecom_demo/data/product_repository.dart';
+import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
 import 'package:flutter_ecom_demo/ui/app_theme.dart';
 import 'package:flutter_ecom_demo/ui/screens/home/home_screen.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SWApp());
+  runApp(
+    MultiProvider(providers: [
+      ChangeNotifierProvider(create: (context) => ProductRepository()),
+      ChangeNotifierProvider(create: (context) => SuggestionRepository()),
+    ],
+    child: const SWApp(),)
+  );
 }
 
 /// S&W Fashion App entry point.

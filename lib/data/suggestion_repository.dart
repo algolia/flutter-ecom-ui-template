@@ -1,12 +1,14 @@
-import 'package:algolia/algolia.dart';
+import 'package:flutter/widgets.dart';
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter_ecom_demo/credentials.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Query suggestions data repository.
-class SuggestionRepository {
-  SuggestionRepository._internal();
+class SuggestionRepository extends ChangeNotifier {
+  SuggestionRepository._internal() {
+    searchTextController.addListener(() => searchSuggestions(searchTextController.text));
+  }
 
   static final SuggestionRepository _instance =
       SuggestionRepository._internal();
@@ -14,6 +16,8 @@ class SuggestionRepository {
   factory SuggestionRepository() {
     return _instance;
   }
+
+  final searchTextController = TextEditingController();
 
   final _suggestionSearcher = HitsSearcher(
       applicationID: Credentials.applicationID,
@@ -46,6 +50,15 @@ class SuggestionRepository {
     final _current = _history.value;
     _current.removeWhere((element) => element == query);
     _history.sink.add(_current);
+  }
+
+  void completeSuggestion(String suggestion) {
+    searchTextController.value = TextEditingValue(
+      text: suggestion,
+      selection: TextSelection.fromPosition(
+        TextPosition(offset: suggestion.length),
+      ),
+    );
   }
 
   void clearHistory() {

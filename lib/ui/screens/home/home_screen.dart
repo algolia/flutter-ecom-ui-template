@@ -6,6 +6,7 @@ import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/autocomplete_screen.dart';
 import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
 import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
+import 'package:provider/provider.dart';
 
 import 'components/products_view.dart';
 
@@ -17,10 +18,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _productRepository = ProductRepository();
-
-  void _presentProductPage(BuildContext context, String productID) {
-    _productRepository.getProduct(productID).then((product) => Navigator.push(
+  void _presentProductPage(BuildContext context, String productID,
+      ProductRepository productRepository) {
+    productRepository.getProduct(productID).then((product) => Navigator.push(
         context,
         MaterialPageRoute(
           builder: (BuildContext context) => ProductScreen(product: product),
@@ -37,10 +37,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _productView(BuildContext context, Product product) {
-    return ProductCardView(
-        product: product,
-        imageAlignment: Alignment.bottomCenter,
-        onTap: (objectID) => _presentProductPage(context, objectID));
+    return Consumer<ProductRepository>(
+        builder: (context, productRepository, child) {
+      return ProductCardView(
+          product: product,
+          imageAlignment: Alignment.bottomCenter,
+          onTap: (objectID) =>
+              _presentProductPage(context, objectID, productRepository));
+    });
   }
 
   @override
@@ -102,24 +106,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const HomeBannerView(),
                   Padding(
-                    padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
-                    child: Column(
-                      children: [
-                        ProductsView(
-                            title: 'New in shoes',
-                            items: _productRepository.shoes,
-                            productWidget: _productView),
-                        ProductsView(
-                            title: 'Spring/Summer 2021',
-                            items: _productRepository.seasonalProducts,
-                            productWidget: _productView),
-                        ProductsView(
-                            title: 'Recommended for you',
-                            items: _productRepository.recommendedProducts,
-                            productWidget: _productView),
-                      ],
-                    ),
-                  ),
+                      padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+                      child: Consumer<ProductRepository>(
+                          builder: (context, productRepository, child) {
+                        return Column(
+                          children: [
+                            ProductsView(
+                                title: 'New in shoes',
+                                items: productRepository.shoes,
+                                productWidget: _productView),
+                            ProductsView(
+                                title: 'Spring/Summer 2021',
+                                items: productRepository.seasonalProducts,
+                                productWidget: _productView),
+                            ProductsView(
+                                title: 'Recommended for you',
+                                items: productRepository.recommendedProducts,
+                                productWidget: _productView),
+                          ],
+                        );
+                      })),
                 ],
               ),
             )));
