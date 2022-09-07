@@ -34,65 +34,64 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Consumer<SuggestionRepository>(
-      builder: (_, suggestionsRepository, __) {
-        return CustomScrollView(slivers: [
-          SliverAppBar(
-            leading: IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: const Icon(Icons.arrow_back)),
-            backgroundColor: AppTheme.neutralLightest,
-            pinned: true,
-            titleSpacing: 0,
-            elevation: 0,
-            title: Consumer<ProductRepository>(
-              builder: (_, productRepository, __) => SearchHeaderView(
-                controller: suggestionsRepository.searchTextController,
-                onSubmitted: (query) {
-                  suggestionsRepository.addToHistory(query);
-                  _launchSearch(query, productRepository);
-                },
-              ),
-            ),
-          ),
-          const SliverToBoxAdapter(
-              child: SizedBox(
-            height: 10,
-          )),
-          ..._section(
-              Row(
-                children: [
-                  const Text(
-                    "Your searches",
-                    style: TextStyle(fontWeight: FontWeight.bold),
+    return Scaffold(
+        body: Consumer<SuggestionRepository>(
+            builder: (_, suggestionsRepository, __) =>
+                CustomScrollView(slivers: [
+                  SliverAppBar(
+                    leading: IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back)),
+                    backgroundColor: AppTheme.neutralLightest,
+                    pinned: true,
+                    titleSpacing: 0,
+                    elevation: 0,
+                    title: Consumer<ProductRepository>(
+                      builder: (_, productRepository, __) => SearchHeaderView(
+                        controller: suggestionsRepository.searchTextController,
+                        onSubmitted: (query) {
+                          suggestionsRepository.addToHistory(query);
+                          _launchSearch(query, productRepository);
+                        },
+                      ),
+                    ),
                   ),
-                  const Spacer(),
-                  TextButton(
-                      onPressed: () =>
-                          setState(() => suggestionsRepository.clearHistory()),
-                      child: const Text("Clear",
-                          style: TextStyle(color: AppTheme.nebula)))
-                ],
-              ),
-              suggestionsRepository.history,
-              (String item) => HistoryRowView(
-                  suggestion: item,
-                  onRemove: (item) => setState(
-                      () => suggestionsRepository.removeFromHistory(item))),
-              suggestionsRepository),
-          ..._section(
-              const Text(
-                "Popular searches",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              suggestionsRepository.suggestions,
-              (QuerySuggestion item) => SuggestionRowView(
-                  suggestion: item,
-                  onComplete: suggestionsRepository.completeSuggestion),
-              suggestionsRepository)
-        ]);
-      },
-    ));
+                  const SliverToBoxAdapter(
+                      child: SizedBox(
+                    height: 10,
+                  )),
+                  ..._section(
+                      Row(
+                        children: [
+                          const Text(
+                            "Your searches",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          const Spacer(),
+                          TextButton(
+                              onPressed: () => setState(
+                                  () => suggestionsRepository.clearHistory()),
+                              child: const Text("Clear",
+                                  style: TextStyle(color: AppTheme.nebula)))
+                        ],
+                      ),
+                      suggestionsRepository.history,
+                      (String item) => HistoryRowView(
+                          suggestion: item,
+                          onRemove: (item) => setState(() =>
+                              suggestionsRepository.removeFromHistory(item))),
+                      suggestionsRepository),
+                  ..._section(
+                      const Text(
+                        "Popular searches",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      suggestionsRepository.suggestions,
+                      (QuerySuggestion item) => SuggestionRowView(
+                          suggestion: item,
+                          onComplete: suggestionsRepository.completeSuggestion),
+                      suggestionsRepository)
+                ])));
   }
 
   List<Widget> _section<Suggestion>(

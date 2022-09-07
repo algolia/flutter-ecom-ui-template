@@ -111,9 +111,6 @@ class ProductRepository extends ChangeNotifier {
 
   Stream<SearchResponse> get searchResult => _hitsSearcher.responses;
 
-  Stream<List<Product>> get products => _hitsSearcher.responses.map(
-      (response) => response.hits.map((hit) => Product.fromJson(hit)).toList());
-
   Stream<List<SelectableFacet>> get brandFacets => _facetList.facets;
 
   /// Get product by ID.
