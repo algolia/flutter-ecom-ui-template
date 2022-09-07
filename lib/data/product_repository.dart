@@ -8,14 +8,15 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 /// Products data repository.
 class ProductRepository extends ChangeNotifier {
-
   late FacetList _facetList;
 
   final PagingController<int, Product> pagingController =
-  PagingController(firstPageKey: 0);
+      PagingController(firstPageKey: 0);
 
   ProductRepository._internal() {
-    _facetList = FacetList(searcher: _hitsSearcher, filterState: _filterState, attribute: "brand");
+    _facetList = FacetList(
+        searcher: _hitsSearcher, filterState: _filterState, attribute: "brand");
+    _hitsSearcher.applyState((state) => state.copyWith(disjunctiveFacets: {'brand'}));
     pagingController.addPageRequestListener((pageKey) {
       search((state) => state.copyWith(page: pageKey));
     });
@@ -43,7 +44,8 @@ class ProductRepository extends ChangeNotifier {
   final _shoesSearcher = HitsSearcher.create(
       applicationID: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey,
-      state: const SearchState(indexName: Credentials.hitsIndex, query: 'shoes'));
+      state:
+          const SearchState(indexName: Credentials.hitsIndex, query: 'shoes'));
 
   final _seasonalProductsSearcher = HitsSearcher.create(
       applicationID: Credentials.applicationID,
@@ -55,7 +57,8 @@ class ProductRepository extends ChangeNotifier {
   final _recommendedProductsSearcher = HitsSearcher.create(
       applicationID: Credentials.applicationID,
       apiKey: Credentials.searchOnlyKey,
-      state: const SearchState(indexName: Credentials.hitsIndex, query: 'jacket'));
+      state:
+          const SearchState(indexName: Credentials.hitsIndex, query: 'jacket'));
 
   final Algolia _algoliaClient = const Algolia.init(
       applicationId: Credentials.applicationID,
@@ -72,8 +75,7 @@ class ProductRepository extends ChangeNotifier {
   }
 
   void selectIndexName(String indexName) {
-    pagingController
-        .refresh();
+    pagingController.refresh();
     _hitsSearcher.applyState((state) => state.copyWith(indexName: indexName));
   }
 
@@ -81,8 +83,7 @@ class ProductRepository extends ChangeNotifier {
     if (_filterState.snapshot().getFilters().isEmpty) {
       return;
     }
-    pagingController
-        .refresh();
+    pagingController.refresh();
     _filterState.clear();
   }
 
@@ -102,11 +103,13 @@ class ProductRepository extends ChangeNotifier {
       _recommendedProductsSearcher.responses.map((response) =>
           response.hits.map((hit) => Product.fromJson(hit)).toList());
 
-  Stream<ecom_page.Page<Product>> get searchPage => _hitsSearcher.responses.map((response) {
+  Stream<ecom_page.Page<Product>> get searchPage =>
+      _hitsSearcher.responses.map((response) {
         final isLastPage = response.page == response.nbPages;
         final nextPageKey = isLastPage ? null : response.page + 1;
         return ecom_page.Page(
-            response.hits.map((h) => Product.fromJson(h)).toList(), nextPageKey);
+            response.hits.map((h) => Product.fromJson(h)).toList(),
+            nextPageKey);
       });
 
   Stream<SearchResponse> get searchResult => _hitsSearcher.responses;
