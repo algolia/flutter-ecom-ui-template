@@ -50,86 +50,74 @@ class _FiltersScreenState extends State<FiltersScreen> {
           ),
         ),
         Expanded(
-          child: ListView.builder(
-            scrollDirection: Axis.vertical,
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return ExpansionTile(
-                  title: const Text(
-                    'Sort',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                  trailing: const Icon(Icons.add),
-                  children: [
-                    Consumer<ProductRepository>(
-                        builder: (_, productRepository, __) => ListView.builder(
-                              scrollDirection: Axis.vertical,
-                              shrinkWrap: true,
-                              itemCount: _indices.length,
-                              itemBuilder: (context, index) {
-                                final entry = _indices.entries.toList()[index];
-                                return ListTile(
-                                    title: Text(entry.key),
-                                    leading: Radio<String>(
-                                      value: entry.value,
-                                      groupValue: _currentIndexName,
-                                      onChanged: (String? value) {
-                                        setState(() {
-                                          _currentIndexName = entry.value;
-                                        });
-                                        productRepository.pagingController
-                                            .refresh();
-                                        productRepository
-                                            .selectIndexName(entry.value);
-                                      },
-                                    ));
-                              },
-                            )),
-                  ],
-                );
-              } else {
-                return ExpansionTile(
-                  title: const Text(
-                    'Brand',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
-                  ),
-                  trailing: const Icon(Icons.add),
-                  children: [
-                    Consumer<ProductRepository>(
-                        builder: (_, productRepository, __) =>
-                            StreamBuilder<List<SelectableFacet>>(
-                                stream: productRepository.brandFacets,
-                                builder: (context, snapshot) {
-                                  final brandFacets = snapshot.data ?? [];
-                                  return ListView.builder(
-                                    scrollDirection: Axis.vertical,
-                                    shrinkWrap: true,
-                                    itemBuilder: (context, index) {
-                                      final facet = brandFacets[index];
-                                      return ListTile(
-                                        title: ToggleButtons(
-                                          children: [Text(facet.item.value)],
-                                          onPressed: (index) {
-                                            productRepository.pagingController
-                                                .refresh();
-                                            productRepository
-                                                .toggleBrand(facet.item.value);
-                                          },
-                                          isSelected: [facet.isSelected],
-                                        ),
-                                      );
+            child: ListView(
+                scrollDirection: Axis.vertical,
+                shrinkWrap: true,
+                children: [
+              ExpansionTile(
+                title: const Text(
+                  'Sort',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+                trailing: const Icon(Icons.add),
+                children: [
+                  Consumer<ProductRepository>(
+                      builder: (_, productRepository, __) => ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: _indices.length,
+                            itemBuilder: (context, index) {
+                              final entry = _indices.entries.toList()[index];
+                              return ListTile(
+                                  title: Text(entry.key),
+                                  leading: Radio<String>(
+                                    value: entry.value,
+                                    groupValue: _currentIndexName,
+                                    onChanged: (String? value) {
+                                      setState(() {
+                                        _currentIndexName = entry.value;
+                                      });
+                                      productRepository
+                                          .selectIndexName(entry.value);
                                     },
-                                    itemCount: brandFacets.length,
-                                  );
-                                })),
-                  ],
-                );
-              }
-            },
-            itemCount: 2,
-          ),
-        ),
+                                  ));
+                            },
+                          )),
+                ],
+              ),
+              ExpansionTile(
+                title: const Text(
+                  'Brand',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+                ),
+                trailing: const Icon(Icons.add),
+                children: [
+                  Consumer<ProductRepository>(
+                      builder: (_, productRepository, __) =>
+                          StreamBuilder<List<SelectableFacet>>(
+                              stream: productRepository.brandFacets,
+                              builder: (context, snapshot) {
+                                final facets = snapshot.data ?? [];
+                                return ListView.builder(
+                                  scrollDirection: Axis.vertical,
+                                  shrinkWrap: true,
+                                  itemBuilder: (context, index) {
+                                    final facet = facets[index];
+                                    return CheckboxListTile(
+                                        value: facet.isSelected,
+                                        title: Text(
+                                            '${facet.item.value} (${facet.item.count})'),
+                                        onChanged: (value) {
+                                          productRepository
+                                              .toggleBrand(facet.item.value);
+                                        });
+                                  },
+                                  itemCount: facets.length,
+                                );
+                              })),
+                ],
+              ),
+            ])),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
@@ -143,31 +131,44 @@ class _FiltersScreenState extends State<FiltersScreen> {
             ],
           ),
           child: SafeArea(
-              child: Row(
-            children: [
-              const Spacer(),
-              OutlinedButton(
-                  onPressed: () => {},
-                  style: OutlinedButton.styleFrom(
-                    primary: AppTheme.darkBlue,
-                    side: const BorderSide(
-                        width: 1.0,
-                        color: AppTheme.darkBlue,
-                        style: BorderStyle.solid),
-                  ),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: const [
-                        Text("Clear Filters"),
-                      ])),
-              const Spacer(),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(primary: AppTheme.darkBlue),
-                  onPressed: () => {},
-                  child: const Text("See 37 Products")),
-              const Spacer(),
-            ],
-          )),
+              child: Consumer<ProductRepository>(
+                  builder: (_, productRepository, __) => Row(
+                        children: [
+                          const Spacer(),
+                          OutlinedButton(
+                              onPressed: () => productRepository.clearFilters(),
+                              style: OutlinedButton.styleFrom(
+                                primary: AppTheme.darkBlue,
+                                side: const BorderSide(
+                                    width: 1.0,
+                                    color: AppTheme.darkBlue,
+                                    style: BorderStyle.solid),
+                              ),
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const [
+                                    Text("Clear Filters"),
+                                  ])),
+                          const Spacer(),
+                          StreamBuilder<SearchResponse>(
+                            stream: productRepository.searchResult,
+                            builder: (context, snapshot) {
+                              final String nbHits;
+                              if (snapshot.hasData) {
+                                nbHits = ' ${snapshot.data!.nbHits} ';
+                              } else {
+                                nbHits = '';
+                              }
+                              return ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      primary: AppTheme.darkBlue),
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text("See $nbHits Products"));
+                            },
+                          ),
+                          const Spacer(),
+                        ],
+                      ))),
         ),
       ],
     );

@@ -67,11 +67,23 @@ class ProductRepository extends ChangeNotifier {
   }
 
   void toggleBrand(String brand) {
+    pagingController.refresh();
     _facetList.toggle(brand);
   }
 
   void selectIndexName(String indexName) {
+    pagingController
+        .refresh();
     _hitsSearcher.applyState((state) => state.copyWith(indexName: indexName));
+  }
+
+  void clearFilters() {
+    if (_filterState.snapshot().getFilters().isEmpty) {
+      return;
+    }
+    pagingController
+        .refresh();
+    _filterState.clear();
   }
 
   String get selectedIndexName => _hitsSearcher.snapshot().indexName;
