@@ -88,6 +88,7 @@ class ProductRepository extends ChangeNotifier {
   }
 
   String get selectedIndexName => _hitsSearcher.snapshot().indexName;
+  int get appliedFiltersCount => _filterState.snapshot().getFilters().length;
 
   /// Get stream of shoes products.
   Stream<List<Product>> get shoes => _shoesSearcher.responses.map(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/ui/screens/filters/filters_screen.dart';
 
 import '../../../app_theme.dart';
@@ -45,21 +46,50 @@ class SearchHeaderView extends StatelessWidget {
                     fontWeight: FontWeight.bold, color: Colors.grey)),
           ]),
         )),
-        ElevatedButton(
-            style: ElevatedButton.styleFrom(primary: AppTheme.darkBlue),
-            onPressed: () => {
-                  showModalBottomSheet(
-                      context: context,
-                      builder: (context) {
-                        return const FiltersScreen();
-                      })
-                },
-            child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.filter_list),
-                  Text("Filter & Sort"),
-                ])),
+        SizedBox(
+          width: 10,
+        ),
+        Container(
+          decoration:
+              BoxDecoration(color: AppTheme.darkBlue, border: Border.all()),
+          child: TextButton(
+              onPressed: () => {
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (context) {
+                          return const FiltersScreen();
+                        })
+                  },
+              child:
+                  Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Icon(
+                  Icons.filter_list,
+                  color: Colors.white,
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                const Text(
+                  "Filter & Sort",
+                  style: TextStyle(color: Colors.white),
+                ),
+                const SizedBox(
+                  width: 10,
+                ),
+                if (appliedFiltersCount != 0)
+                  Container(
+                    padding: const EdgeInsets.all(3),
+                    decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(15)),
+                    child: Text(
+                      ' $appliedFiltersCount ',
+                      style: const TextStyle(color: AppTheme.darkBlue),
+                    ),
+                  ),
+              ])),
+        ),
       ],
     );
   }

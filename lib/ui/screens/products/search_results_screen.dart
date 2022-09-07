@@ -25,8 +25,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const AppBarView(),
-      body: SafeArea(
-          child: Column(
+      body: Column(
         children: [
           Consumer<ProductRepository>(
               builder: (_, productRepository, __) =>
@@ -36,7 +35,11 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                       if (snapshot.hasData) {
                         final data = snapshot.data!;
                         return SearchHeaderView(
-                            query: data.query, resultsCount: data.nbHits);
+                          query: data.query,
+                          resultsCount: data.nbHits,
+                          appliedFiltersCount:
+                              productRepository.appliedFiltersCount,
+                        );
                       } else {
                         return Container();
                       }
@@ -56,7 +59,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                 )),
           ),
         ],
-      )),
+      ),
     );
   }
 
