@@ -115,6 +115,8 @@ class ProductRepository extends ChangeNotifier {
       _recommendedProductsSearcher.responses.map((response) =>
           response.hits.map((hit) => Product.fromJson(hit)).toList());
 
+  Stream<Filters> get filters => _filterState.filters;
+
   Stream<ecom_page.Page<Product>> get searchPage =>
       _hitsSearcher.responses.map((response) {
         final isLastPage = response.page == response.nbPages;

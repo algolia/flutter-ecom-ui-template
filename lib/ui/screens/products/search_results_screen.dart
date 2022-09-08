@@ -45,9 +45,6 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                               productRepository.appliedFiltersCount,
                           filtersButtonTapped: () {
                             _key.currentState?.openEndDrawer();
-                            // showModalBottomSheet(context: context, useRootNavigator: true, builder: (BuildContext context) {
-                            //   return const FiltersScreen();
-                            // });
                           },
                         );
                       } else {
