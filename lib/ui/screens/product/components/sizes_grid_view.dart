@@ -23,6 +23,7 @@ class SizesGridView extends StatelessWidget {
             mainAxisSpacing: 12,
             crossAxisCount: 4,
             childAspectRatio: 4 / 2,
+            padding: const EdgeInsets.only(top: 0),
             children: List.generate(sizesCount, (index) {
               String size = sizes[index];
               bool isSelected = selectedSizes.contains(size);
