@@ -58,8 +58,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                           _brandHeader(context),
                           if (_isActive(FiltersSection.brand)) _brand(context),
                           _sizeHeader(context),
-                          if (_isActive(FiltersSection.size))
-                            _size(context),
+                          if (_isActive(FiltersSection.size)) _size(context),
                         ],
                       )),
             ),
@@ -89,7 +88,10 @@ class _FiltersScreenState extends State<FiltersScreen> {
   }
 
   Widget _expandableRowHeader(
-          BuildContext context, Widget title, FiltersSection section, Stream<List<SelectableFacet>>? facetsStream) =>
+          BuildContext context,
+          Widget title,
+          FiltersSection section,
+          Stream<List<SelectableFacet>>? facetsStream) =>
       SliverToBoxAdapter(
           child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -98,8 +100,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
             children: [
               title,
               const Spacer(),
-                if (facetsStream != null)
-                  _countContainer(facetsStream),
+              if (facetsStream != null) _countContainer(facetsStream),
               Icon(_isActive(section) ? Icons.remove : Icons.add)
             ],
           ),
@@ -120,7 +121,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
         ],
         crossAxisAlignment: CrossAxisAlignment.start,
       ),
-      FiltersSection.sort, null);
+      FiltersSection.sort,
+      null);
 
   Widget _sort(BuildContext context) => SliverFixedExtentList(
       itemExtent: 40,
@@ -149,10 +151,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
 
   Widget _brandHeader(BuildContext context) => Consumer<ProductRepository>(
       builder: (_, productRepository, __) => _expandableRowHeader(
-      context,
-      const Text('Brand',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-      FiltersSection.brand, productRepository.brandFacets));
+          context,
+          const Text('Brand',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          FiltersSection.brand,
+          productRepository.brandFacets));
 
   Widget _brand(BuildContext context) => Consumer<ProductRepository>(
       builder: (_, productRepository, __) =>
@@ -191,7 +194,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
       StreamBuilder<List<SelectableFacet>>(
           stream: facetsStream,
           builder: (context, snapshot) {
-            final selectedFacetsCount = snapshot.data?.where((element) => element.isSelected).length ?? 0;
+            final selectedFacetsCount =
+                snapshot.data?.where((element) => element.isSelected).length ??
+                    0;
             if (selectedFacetsCount > 0) {
               return Container(
                 padding: const EdgeInsets.all(3),
@@ -213,11 +218,12 @@ class _FiltersScreenState extends State<FiltersScreen> {
           });
 
   Widget _sizeHeader(BuildContext context) => Consumer<ProductRepository>(
-  builder: (_, productRepository, __) => _expandableRowHeader(
-      context,
-      const Text('Size',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-      FiltersSection.size, productRepository.sizeFacets));
+      builder: (_, productRepository, __) => _expandableRowHeader(
+          context,
+          const Text('Size',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+          FiltersSection.size,
+          productRepository.sizeFacets));
 
   Widget _size(BuildContext context) => Consumer<ProductRepository>(
       builder: (_, productRepository, __) => StreamBuilder<
