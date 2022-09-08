@@ -53,20 +53,13 @@ class _FiltersScreenState extends State<FiltersScreen> {
               child: Consumer<ProductRepository>(
                   builder: (_, productRepository, __) => CustomScrollView(
                         slivers: [
-                          SliverToBoxAdapter(
-                            child: _sortHeader(context),
-                          ),
+                          _sortHeader(context),
                           if (_isActive(FiltersSection.sort)) _sort(context),
-                          SliverToBoxAdapter(
-                            child: _brandHeader(context),
-                          ),
-                          if (_isActive(FiltersSection.brand))
-                            _brand(context, productRepository),
-                          SliverToBoxAdapter(
-                            child: _sizeHeader(context),
-                          ),
+                          _brandHeader(context),
+                          if (_isActive(FiltersSection.brand)) _brand(context),
+                          _sizeHeader(context),
                           if (_isActive(FiltersSection.size))
-                            _size(context, productRepository),
+                            _size(context),
                         ],
                       )),
             ),
@@ -96,23 +89,23 @@ class _FiltersScreenState extends State<FiltersScreen> {
   }
 
   Widget _expandableRowHeader(
-          BuildContext context, Widget title, FiltersSection section) =>
-      Padding(
+          BuildContext context, Widget title, FiltersSection section, Stream<List<SelectableFacet>>? facetsStream) =>
+      SliverToBoxAdapter(
+          child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
         child: InkWell(
           child: Row(
             children: [
               title,
               const Spacer(),
-              Consumer<ProductRepository>(builder: (_, productRepository, __) {
-                return _countContainer(productRepository, section);
-              }),
+                if (facetsStream != null)
+                  _countContainer(facetsStream),
               Icon(_isActive(section) ? Icons.remove : Icons.add)
             ],
           ),
           onTap: () => setState(() => _toggle(section)),
         ),
-      );
+      ));
 
   Widget _sortHeader(BuildContext context) => _expandableRowHeader(
       context,
@@ -127,7 +120,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
         ],
         crossAxisAlignment: CrossAxisAlignment.start,
       ),
-      FiltersSection.sort);
+      FiltersSection.sort, null);
 
   Widget _sort(BuildContext context) => SliverFixedExtentList(
       itemExtent: 40,
@@ -154,62 +147,52 @@ class _FiltersScreenState extends State<FiltersScreen> {
         childCount: _indicesTitles.length,
       ));
 
-  Widget _brandHeader(BuildContext context) => _expandableRowHeader(
+  Widget _brandHeader(BuildContext context) => Consumer<ProductRepository>(
+      builder: (_, productRepository, __) => _expandableRowHeader(
       context,
       const Text('Brand',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-      FiltersSection.brand);
+      FiltersSection.brand, productRepository.brandFacets));
 
-  Widget _brand(BuildContext context, ProductRepository productRepository) =>
+  Widget _brand(BuildContext context) => Consumer<ProductRepository>(
+      builder: (_, productRepository, __) =>
+          StreamBuilder<List<SelectableFacet>>(
+              stream: productRepository.brandFacets,
+              builder: (context, snapshot) {
+                final facets = snapshot.data ?? [];
+                return SliverFixedExtentList(
+                    itemExtent: 44,
+                    delegate: SliverChildBuilderDelegate(
+                      (BuildContext context, int index) {
+                        final facet = facets[index];
+                        return InkWell(
+                          child: Row(children: [
+                            Icon(
+                              facet.isSelected
+                                  ? Icons.check_box
+                                  : Icons.check_box_outline_blank,
+                            ),
+                            const SizedBox(
+                              width: 5,
+                            ),
+                            Text(facet.item.value),
+                            const Spacer(),
+                            Text('${facet.item.count}'),
+                          ]),
+                          onTap: () =>
+                              productRepository.toggleBrand(facet.item.value),
+                        );
+                      },
+                      childCount: facets.length,
+                    ));
+              }));
+
+  Widget _countContainer(Stream<List<SelectableFacet>> facetsStream) =>
       StreamBuilder<List<SelectableFacet>>(
-          stream: productRepository.brandFacets,
+          stream: facetsStream,
           builder: (context, snapshot) {
-            final facets = snapshot.data ?? [];
-            return SliverFixedExtentList(
-                itemExtent: 44,
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    final facet = facets[index];
-                    return InkWell(
-                      child: Row(children: [
-                        Icon(
-                          facet.isSelected
-                              ? Icons.check_box
-                              : Icons.check_box_outline_blank,
-                        ),
-                        const SizedBox(
-                          width: 5,
-                        ),
-                        Text(facet.item.value),
-                        const Spacer(),
-                        Text('${facet.item.count}'),
-                      ]),
-                      onTap: () =>
-                          productRepository.toggleBrand(facet.item.value),
-                    );
-                  },
-                  childCount: facets.length,
-                ));
-          });
-
-  int _selectedFacetsCount(
-      ProductRepository productRepository, FiltersSection section) {
-    switch (section) {
-      case FiltersSection.size:
-        return productRepository.sizeSelectedFacetsCount;
-      case FiltersSection.brand:
-        return productRepository.brandSelectedFacetsCount;
-      default:
-        return 0;
-    }
-  }
-
-  Widget _countContainer(
-          ProductRepository productRepository, FiltersSection section) =>
-      StreamBuilder(
-          stream: productRepository.filters,
-          builder: (context, snapshot) {
-            if (_selectedFacetsCount(productRepository, section) > 0) {
+            final selectedFacetsCount = snapshot.data?.where((element) => element.isSelected).length ?? 0;
+            if (selectedFacetsCount > 0) {
               return Container(
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
@@ -217,24 +200,28 @@ class _FiltersScreenState extends State<FiltersScreen> {
                     border: Border.all(color: Colors.transparent),
                     borderRadius: BorderRadius.circular(15)),
                 child: Text(
-                  ' ${_selectedFacetsCount(productRepository, section)} ',
+                  ' $selectedFacetsCount ',
                   style: const TextStyle(
-                      color: AppTheme.darkBlue, fontWeight: FontWeight.w400, fontSize: 10),
+                      color: AppTheme.darkBlue,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 10),
                 ),
               );
             } else {
               return Container();
             }
-            });
+          });
 
-  Widget _sizeHeader(BuildContext context) => _expandableRowHeader(
+  Widget _sizeHeader(BuildContext context) => Consumer<ProductRepository>(
+  builder: (_, productRepository, __) => _expandableRowHeader(
       context,
       const Text('Size',
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-      FiltersSection.size);
+      FiltersSection.size, productRepository.sizeFacets));
 
-  Widget _size(BuildContext context, ProductRepository productRepository) =>
-      StreamBuilder<List<SelectableFacet>>(
+  Widget _size(BuildContext context) => Consumer<ProductRepository>(
+      builder: (_, productRepository, __) => StreamBuilder<
+              List<SelectableFacet>>(
           stream: productRepository.sizeFacets,
           builder: (context, snapshot) {
             final facets = snapshot.data ?? [];
@@ -271,7 +258,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                   },
                   childCount: facets.length,
                 ));
-          });
+          }));
 
   Widget _footer(BuildContext context) => Consumer<ProductRepository>(
         builder: (_, productRepository, __) => Row(
