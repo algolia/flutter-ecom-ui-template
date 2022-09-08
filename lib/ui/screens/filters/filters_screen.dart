@@ -1,7 +1,6 @@
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/components/sizes_grid_view.dart';
 import 'package:provider/provider.dart';
 
 import '../../app_theme.dart';
@@ -16,16 +15,12 @@ class FiltersScreen extends StatefulWidget {
 enum FiltersSection { none, sort, brand, size }
 
 class _FiltersScreenState extends State<FiltersScreen> {
+
   final _indicesTitles = const <String, String>{
     'STAGING_native_ecom_demo_products': 'Most popular',
     'STAGING_native_ecom_demo_products_products_price_asc': 'Price Low to High',
     'STAGING_native_ecom_demo_products_products_price_desc':
         'Price High to Low',
-  };
-
-  final _facetTitles = const <String, String>{
-    'brand': 'Brand',
-    'available_sizes': 'Size',
   };
 
   FiltersSection activeSection = FiltersSection.none;
@@ -50,17 +45,16 @@ class _FiltersScreenState extends State<FiltersScreen> {
               height: 10,
             ),
             Expanded(
-              child: Consumer<ProductRepository>(
-                  builder: (_, productRepository, __) => CustomScrollView(
-                        slivers: [
-                          _sortHeader(context),
-                          if (_isActive(FiltersSection.sort)) _sort(context),
-                          _brandHeader(context),
-                          if (_isActive(FiltersSection.brand)) _brand(context),
-                          _sizeHeader(context),
-                          if (_isActive(FiltersSection.size)) _size(context),
-                        ],
-                      )),
+              child: CustomScrollView(
+                slivers: [
+                  _sortHeader(context),
+                  if (_isActive(FiltersSection.sort)) _sort(context),
+                  _brandHeader(context),
+                  if (_isActive(FiltersSection.brand)) _brand(context),
+                  _sizeHeader(context),
+                  if (_isActive(FiltersSection.size)) _size(context),
+                ],
+              ),
             ),
             const Divider(),
             _footer(context),
@@ -87,6 +81,34 @@ class _FiltersScreenState extends State<FiltersScreen> {
     );
   }
 
+  Widget _selectedFacetsCountContainer(
+          Stream<List<SelectableFacet>> facetsStream) =>
+      StreamBuilder<List<SelectableFacet>>(
+          stream: facetsStream,
+          builder: (context, snapshot) {
+            final selectedFacetsCount =
+                snapshot.data?.where((element) => element.isSelected).length ??
+                    0;
+            if (selectedFacetsCount > 0) {
+              return Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                    color: Colors.grey,
+                    border: Border.all(color: Colors.transparent),
+                    borderRadius: BorderRadius.circular(15)),
+                child: Text(
+                  ' $selectedFacetsCount ',
+                  style: const TextStyle(
+                      color: AppTheme.darkBlue,
+                      fontWeight: FontWeight.w400,
+                      fontSize: 10),
+                ),
+              );
+            } else {
+              return Container();
+            }
+          });
+
   Widget _expandableRowHeader(
           BuildContext context,
           Widget title,
@@ -100,7 +122,8 @@ class _FiltersScreenState extends State<FiltersScreen> {
             children: [
               title,
               const Spacer(),
-              if (facetsStream != null) _countContainer(facetsStream),
+              if (facetsStream != null)
+                _selectedFacetsCountContainer(facetsStream),
               Icon(_isActive(section) ? Icons.remove : Icons.add)
             ],
           ),
@@ -189,33 +212,6 @@ class _FiltersScreenState extends State<FiltersScreen> {
                       childCount: facets.length,
                     ));
               }));
-
-  Widget _countContainer(Stream<List<SelectableFacet>> facetsStream) =>
-      StreamBuilder<List<SelectableFacet>>(
-          stream: facetsStream,
-          builder: (context, snapshot) {
-            final selectedFacetsCount =
-                snapshot.data?.where((element) => element.isSelected).length ??
-                    0;
-            if (selectedFacetsCount > 0) {
-              return Container(
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                    color: Colors.grey,
-                    border: Border.all(color: Colors.transparent),
-                    borderRadius: BorderRadius.circular(15)),
-                child: Text(
-                  ' $selectedFacetsCount ',
-                  style: const TextStyle(
-                      color: AppTheme.darkBlue,
-                      fontWeight: FontWeight.w400,
-                      fontSize: 10),
-                ),
-              );
-            } else {
-              return Container();
-            }
-          });
 
   Widget _sizeHeader(BuildContext context) => Consumer<ProductRepository>(
       builder: (_, productRepository, __) => _expandableRowHeader(
