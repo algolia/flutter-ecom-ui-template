@@ -8,15 +8,21 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 /// Products data repository.
 class ProductRepository extends ChangeNotifier {
-  late FacetList _facetList;
+  late FacetList _brandFacetList;
+  late FacetList _sizeFacetList;
 
   final PagingController<int, Product> pagingController =
       PagingController(firstPageKey: 0);
 
   ProductRepository._internal() {
-    _facetList = FacetList(
-        searcher: _hitsSearcher, filterState: _filterState, attribute: "brand");
-    _hitsSearcher.applyState((state) => state.copyWith(disjunctiveFacets: {'brand'}));
+    _brandFacetList = FacetList(
+        searcher: _hitsSearcher, filterState: _filterState, attribute: 'brand');
+    _sizeFacetList = FacetList(
+        searcher: _hitsSearcher,
+        filterState: _filterState,
+        attribute: 'available_sizes');
+    _hitsSearcher.applyState((state) =>
+        state.copyWith(disjunctiveFacets: {'brand', 'available_sizes'}));
     pagingController.addPageRequestListener((pageKey) {
       search((state) => state.copyWith(page: pageKey));
     });
@@ -71,7 +77,12 @@ class ProductRepository extends ChangeNotifier {
 
   void toggleBrand(String brand) {
     pagingController.refresh();
-    _facetList.toggle(brand);
+    _brandFacetList.toggle(brand);
+  }
+
+  void toggleSize(String size) {
+    pagingController.refresh();
+    _sizeFacetList.toggle(size);
   }
 
   void selectIndexName(String indexName) {
@@ -115,7 +126,11 @@ class ProductRepository extends ChangeNotifier {
 
   Stream<SearchResponse> get searchResult => _hitsSearcher.responses;
 
-  Stream<List<SelectableFacet>> get brandFacets => _facetList.facets;
+  int get brandSelectedFacetsCount => _brandFacetList.snapshot()?.where((element) => element.isSelected).length ?? 0;
+  int get sizeSelectedFacetsCount => _sizeFacetList.snapshot()?.where((element) => element.isSelected).length ?? 0;
+
+  Stream<List<SelectableFacet>> get brandFacets => _brandFacetList.facets;
+  Stream<List<SelectableFacet>> get sizeFacets => _sizeFacetList.facets;
 
   /// Get product by ID.
   Future<Product> getProduct(String productID) async {

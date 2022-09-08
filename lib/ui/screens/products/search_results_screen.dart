@@ -1,7 +1,6 @@
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
 import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/components/mode_switcher_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/components/no_results_view.dart';
@@ -10,6 +9,8 @@ import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_list
 import 'package:flutter_ecom_demo/ui/screens/products/components/search_header_view.dart';
 import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
 import 'package:provider/provider.dart';
+
+import '../filters/filters_screen.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({Key? key}) : super(key: key);
@@ -20,11 +21,14 @@ class SearchResultsScreen extends StatefulWidget {
 
 class _SearchResultsScreen extends State<SearchResultsScreen> {
   HitsDisplay _display = HitsDisplay.grid;
+  final GlobalKey<ScaffoldState> _key = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _key,
       appBar: const AppBarView(),
+      endDrawer: const Drawer(child: FiltersScreen(),),
       body: Column(
         children: [
           Consumer<ProductRepository>(
@@ -39,6 +43,12 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                           resultsCount: data.nbHits,
                           appliedFiltersCount:
                               productRepository.appliedFiltersCount,
+                          filtersButtonTapped: () {
+                            _key.currentState?.openEndDrawer();
+                            // showModalBottomSheet(context: context, useRootNavigator: true, builder: (BuildContext context) {
+                            //   return const FiltersScreen();
+                            // });
+                          },
                         );
                       } else {
                         return Container();

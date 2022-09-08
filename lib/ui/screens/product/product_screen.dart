@@ -70,8 +70,8 @@ class _ProductScreenState extends State<ProductScreen> {
                     product.oneSize
                         ? const SizedBox.shrink()
                         : SizesGridView(
-                            product: product,
-                            selectedSize: _selectedSize,
+                            sizes: product.sizes ?? [],
+                            selectedSizes: _selectedSize == null ? {} : {_selectedSize!},
                             didSelectSize: (size) => setState(() {
                                   _selectedSize = size;
                                 })),

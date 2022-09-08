@@ -4,16 +4,16 @@ import 'package:flutter_ecom_demo/ui/app_theme.dart';
 
 class SizesGridView extends StatelessWidget {
   const SizesGridView(
-      {Key? key, required this.product, this.selectedSize, this.didSelectSize})
+      {Key? key, required this.sizes, this.selectedSizes = const {}, this.didSelectSize})
       : super(key: key);
 
-  final Product product;
-  final String? selectedSize;
+  final List<String> sizes;
+  final Set<String> selectedSizes;
   final Function(String)? didSelectSize;
 
   @override
   Widget build(BuildContext context) {
-    final sizesCount = product.sizes?.length ?? 0;
+    final sizesCount = sizes.length;
     final rowsCount = sizesCount / 4 + (sizesCount % 4 == 0 ? 0 : 1);
     return SizedBox(
         height: rowsCount * 50,
@@ -24,8 +24,8 @@ class SizesGridView extends StatelessWidget {
             crossAxisCount: 4,
             childAspectRatio: 4 / 2,
             children: List.generate(sizesCount, (index) {
-              String size = product.sizes?[index] ?? "";
-              bool isSelected = size == selectedSize;
+              String size = sizes[index];
+              bool isSelected = selectedSizes.contains(size);
               if (isSelected) {
                 return ElevatedButton(
                     style: ElevatedButton.styleFrom(primary: AppTheme.darkBlue),

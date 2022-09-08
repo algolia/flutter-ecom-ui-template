@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/ui/screens/filters/filters_screen.dart';
 
 import '../../../app_theme.dart';
@@ -9,11 +8,13 @@ class SearchHeaderView extends StatelessWidget {
       {Key? key,
       required this.query,
       this.resultsCount = 0,
-      this.appliedFiltersCount = 0})
+      this.appliedFiltersCount = 0,
+      this.filtersButtonTapped})
       : super(key: key);
 
   final String query;
   final int resultsCount;
+  final VoidCallback? filtersButtonTapped;
   final int appliedFiltersCount;
 
   @override
@@ -46,20 +47,14 @@ class SearchHeaderView extends StatelessWidget {
                     fontWeight: FontWeight.bold, color: Colors.grey)),
           ]),
         )),
-        SizedBox(
+        const SizedBox(
           width: 10,
         ),
         Container(
           decoration:
               BoxDecoration(color: AppTheme.darkBlue, border: Border.all()),
           child: TextButton(
-              onPressed: () => {
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (context) {
-                          return const FiltersScreen();
-                        })
-                  },
+              onPressed: filtersButtonTapped,
               child:
                   Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 const Icon(
