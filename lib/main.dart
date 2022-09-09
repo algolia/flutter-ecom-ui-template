@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
+import 'package:flutter_ecom_demo/data/search_history_repository.dart';
 import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
 import 'package:flutter_ecom_demo/ui/app_theme.dart';
 import 'package:flutter_ecom_demo/ui/screens/home/home_screen.dart';
@@ -11,6 +12,7 @@ void main() async {
     MultiProvider(providers: [
       ChangeNotifierProvider(create: (context) => ProductRepository()),
       ChangeNotifierProvider(create: (context) => SuggestionRepository()),
+      ChangeNotifierProvider(create: (context) => SearchHistoryRepository()),
     ],
     child: const SWApp(),)
   );

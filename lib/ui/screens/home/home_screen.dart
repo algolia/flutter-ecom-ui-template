@@ -28,12 +28,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _presentAutoComplete(BuildContext context) {
-    Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) => const AutocompleteScreen(),
-          fullscreenDialog: true,
-        ));
+    Navigator.of(context).push(PageRouteBuilder(
+      pageBuilder: (_, __, ___) => const AutocompleteScreen(),
+      fullscreenDialog: true,
+    ));
   }
 
   Widget _productView(BuildContext context, Product product) {

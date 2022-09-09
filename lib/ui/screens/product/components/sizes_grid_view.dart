@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
 import 'package:flutter_ecom_demo/ui/app_theme.dart';
 
 class SizesGridView extends StatelessWidget {

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/ui/screens/filters/filters_screen.dart';
 
 import '../../../app_theme.dart';
 

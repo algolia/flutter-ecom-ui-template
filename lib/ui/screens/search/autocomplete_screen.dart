@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
+import 'package:flutter_ecom_demo/data/search_history_repository.dart';
 import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/search_results_screen.dart';
@@ -22,7 +23,9 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
     super.initState();
   }
 
-  void _launchSearch(String query, ProductRepository productRepository) {
+  void _onSubmitSearch(String query) {
+    context.read<SearchHistoryRepository>().addToHistory(query);
+    final productRepository = context.read<ProductRepository>();
     productRepository.pagingController.refresh();
     productRepository.search((state) => state.copyWith(query: query));
     Navigator.push(
@@ -35,73 +38,66 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Consumer<SuggestionRepository>(
-            builder: (_, suggestionsRepository, __) =>
-                CustomScrollView(slivers: [
-                  SliverAppBar(
-                    leading: IconButton(
-                        onPressed: () => Navigator.pop(context),
-                        icon: const Icon(Icons.arrow_back)),
-                    backgroundColor: AppTheme.neutralLightest,
-                    pinned: true,
-                    titleSpacing: 0,
-                    elevation: 0,
-                    title: Consumer<ProductRepository>(
-                      builder: (_, productRepository, __) => SearchHeaderView(
-                        controller: suggestionsRepository.searchTextController,
-                        onSubmitted: (query) {
-                          suggestionsRepository.addToHistory(query);
-                          _launchSearch(query, productRepository);
-                        },
-                      ),
-                    ),
-                  ),
-                  const SliverToBoxAdapter(
-                      child: SizedBox(
-                    height: 10,
-                  )),
-                  ..._section(
-                      Row(
-                        children: [
-                          const Text(
-                            "Your searches",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          const Spacer(),
-                          TextButton(
-                              onPressed: () => setState(
-                                  () => suggestionsRepository.clearHistory()),
-                              child: const Text("Clear",
-                                  style: TextStyle(color: AppTheme.nebula)))
-                        ],
-                      ),
-                      suggestionsRepository.history,
-                      (String item) => HistoryRowView(
-                          suggestion: item,
-                          onRemove: (item) => setState(() =>
-                              suggestionsRepository.removeFromHistory(item))),
-                      suggestionsRepository),
-                  ..._section(
-                      const Text(
-                        "Popular searches",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      suggestionsRepository.suggestions,
-                      (QuerySuggestion item) => SuggestionRowView(
-                          suggestion: item,
-                          onComplete: suggestionsRepository.completeSuggestion),
-                      suggestionsRepository)
-                ])));
+        body: CustomScrollView(slivers: [
+      SliverAppBar(
+        leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back)),
+        backgroundColor: AppTheme.neutralLightest,
+        pinned: true,
+        titleSpacing: 0,
+        elevation: 0,
+        title: SearchHeaderView(
+          controller: context.read<SuggestionRepository>().searchTextController,
+          onSubmitted: _onSubmitSearch,
+        ),
+      ),
+      const SliverToBoxAdapter(
+          child: SizedBox(
+        height: 10,
+      )),
+      _sectionHeader(
+        context.read<SearchHistoryRepository>().history,
+        Row(
+          children: [
+            const Text(
+              "Your searches",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const Spacer(),
+            TextButton(
+                onPressed: () =>
+                    context.read<SearchHistoryRepository>().clearHistory(),
+                child: const Text("Clear",
+                    style: TextStyle(color: AppTheme.nebula)))
+          ],
+        ),
+      ),
+      _sectionBody(
+          context.read<SearchHistoryRepository>().history,
+          (String item) => HistoryRowView(
+              suggestion: item,
+              onRemove: (item) => context
+                  .read<SearchHistoryRepository>()
+                  .removeFromHistory(item))),
+      _sectionHeader(
+          context.read<SearchHistoryRepository>().history,
+          const Text(
+            "Popular searches",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          )),
+      _sectionBody(
+          context.read<SuggestionRepository>().suggestions,
+          (QuerySuggestion item) => SuggestionRowView(
+              suggestion: item,
+              onComplete:
+                  context.read<SuggestionRepository>().completeSuggestion)),
+    ]));
   }
 
-  List<Widget> _section<Suggestion>(
-      Widget title,
-      Stream<List<Suggestion>> items,
-      Function(Suggestion) rowBuilder,
-      SuggestionRepository suggestionsRepository) {
-    return [
-      StreamBuilder<List<Suggestion>>(
-          stream: items,
+  Widget _sectionHeader<Item>(Stream<List<Item>> itemsStream, Widget title) =>
+      StreamBuilder<List<Item>>(
+          stream: itemsStream,
           builder: (context, snapshot) {
             final suggestions = snapshot.data ?? [];
             return SliverSafeArea(
@@ -113,9 +109,12 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
                       child:
                           suggestions.isEmpty ? const SizedBox.shrink() : title,
                     )));
-          }),
-      StreamBuilder<List<Suggestion>>(
-          stream: items,
+          });
+
+  Widget _sectionBody<Item>(
+          Stream<List<Item>> itemsStream, Function(Item) rowBuilder) =>
+      StreamBuilder<List<Item>>(
+          stream: itemsStream,
           builder: (context, snapshot) {
             final suggestions = snapshot.data ?? [];
             if (suggestions.isEmpty) {
@@ -130,18 +129,14 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
                         delegate: SliverChildBuilderDelegate(
                           (BuildContext context, int index) {
                             final item = suggestions[index];
-                            return Consumer<ProductRepository>(
-                                builder: (_, productRepository, __) => InkWell(
-                                    onTap: () {
-                                      final query = item.toString();
-                                      suggestionsRepository.addToHistory(query);
-                                      _launchSearch(query, productRepository);
-                                    },
-                                    child: rowBuilder(item)));
+                            return InkWell(
+                                onTap: () {
+                                  final query = item.toString();
+                                  _onSubmitSearch(query);
+                                },
+                                child: rowBuilder(item));
                           },
                           childCount: suggestions.length,
                         ))));
-          })
-    ];
-  }
+          });
 }

@@ -28,7 +28,9 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
     return Scaffold(
       key: _key,
       appBar: const AppBarView(),
-      endDrawer: const Drawer(child: FiltersScreen(),),
+      endDrawer: const Drawer(
+        child: FiltersScreen(),
+      ),
       body: Column(
         children: [
           Consumer<ProductRepository>(
@@ -38,15 +40,16 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
                         final data = snapshot.data!;
-                        return SearchHeaderView(
-                          query: data.query,
-                          resultsCount: data.nbHits,
-                          appliedFiltersCount:
-                              productRepository.appliedFiltersCount,
-                          filtersButtonTapped: () {
-                            _key.currentState?.openEndDrawer();
-                          },
-                        );
+                        return StreamBuilder<int>(
+                            stream: productRepository.appliedFiltersCount,
+                            builder: (context, snapshot) => SearchHeaderView(
+                                  query: data.query,
+                                  resultsCount: data.nbHits,
+                                  filtersButtonTapped: () {
+                                    _key.currentState?.openEndDrawer();
+                                  },
+                                  appliedFiltersCount: snapshot.data ?? 0,
+                                ));
                       } else {
                         return Container();
                       }

@@ -24,8 +24,6 @@ class SuggestionRepository extends ChangeNotifier {
       apiKey: Credentials.searchOnlyKey,
       indexName: Credentials.suggestionsIndex);
 
-  final BehaviorSubject<List<String>> _history = BehaviorSubject.seeded(['jackets']);
-
   void searchSuggestions(String query) {
     _suggestionSearcher.query(query);
   }
@@ -36,22 +34,6 @@ class SuggestionRepository extends ChangeNotifier {
         return response.hits.map((h) => QuerySuggestion.fromHit(h)).toList();
       });
 
-  Stream<List<String>> get history => _history;
-
-  void addToHistory(String query) {
-    if (query.isEmpty) return;
-    final _current = _history.value;
-    _current.removeWhere((element) => element == query);
-    _current.add(query);
-    _history.sink.add(_current);
-  }
-
-  void removeFromHistory(String query) {
-    final _current = _history.value;
-    _current.removeWhere((element) => element == query);
-    _history.sink.add(_current);
-  }
-
   void completeSuggestion(String suggestion) {
     searchTextController.value = TextEditingValue(
       text: suggestion,
@@ -61,7 +43,4 @@ class SuggestionRepository extends ChangeNotifier {
     );
   }
 
-  void clearHistory() {
-    _history.sink.add([]);
-  }
 }

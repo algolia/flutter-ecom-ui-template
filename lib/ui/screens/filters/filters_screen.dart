@@ -15,7 +15,6 @@ class FiltersScreen extends StatefulWidget {
 enum FiltersSection { none, sort, brand, size }
 
 class _FiltersScreenState extends State<FiltersScreen> {
-
   final _indicesTitles = const <String, String>{
     'STAGING_native_ecom_demo_products': 'Most popular',
     'STAGING_native_ecom_demo_products_products_price_asc': 'Price Low to High',
@@ -48,11 +47,11 @@ class _FiltersScreenState extends State<FiltersScreen> {
               child: CustomScrollView(
                 slivers: [
                   _sortHeader(context),
-                  if (_isActive(FiltersSection.sort)) _sort(context),
+                  if (_isActive(FiltersSection.sort)) _sortSelector(context),
                   _brandHeader(context),
-                  if (_isActive(FiltersSection.brand)) _brand(context),
+                  if (_isActive(FiltersSection.brand)) _brandSelector(context),
                   _sizeHeader(context),
-                  if (_isActive(FiltersSection.size)) _size(context),
+                  if (_isActive(FiltersSection.size)) _sizeSelector(context),
                 ],
               ),
             ),
@@ -138,171 +137,164 @@ class _FiltersScreenState extends State<FiltersScreen> {
           const Text('Sort',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
           if (!_isActive(FiltersSection.sort))
-            Consumer<ProductRepository>(
-                builder: (_, productRepository, __) => Text(
-                    '${_indicesTitles[productRepository.selectedIndexName]}')),
+            Text(
+                '${_indicesTitles[context.read<ProductRepository>().selectedIndexName]}'),
         ],
         crossAxisAlignment: CrossAxisAlignment.start,
       ),
       FiltersSection.sort,
       null);
 
-  Widget _sort(BuildContext context) => SliverFixedExtentList(
+  Widget _sortSelector(BuildContext context) => SliverFixedExtentList(
       itemExtent: 40,
       delegate: SliverChildBuilderDelegate(
         (BuildContext context, int index) {
           final item = _indicesTitles.entries.toList()[index];
-          return Consumer<ProductRepository>(
-              builder: (_, productRepository, __) => InkWell(
-                  onTap: () {
-                    setState(() {
-                      productRepository.selectIndexName(item.key);
-                      _toggle(FiltersSection.sort);
-                    });
-                  },
-                  child: Text(
-                    item.value,
-                    style: TextStyle(
-                        fontWeight:
-                            item.key == productRepository.selectedIndexName
-                                ? FontWeight.bold
-                                : FontWeight.normal),
-                  )));
+          final productRepository = context.read<ProductRepository>();
+          return InkWell(
+              onTap: () {
+                setState(() {
+                  productRepository.selectIndexName(item.key);
+                  _toggle(FiltersSection.sort);
+                });
+              },
+              child: Text(
+                item.value,
+                style: TextStyle(
+                    fontWeight: item.key == productRepository.selectedIndexName
+                        ? FontWeight.bold
+                        : FontWeight.normal),
+              ));
         },
         childCount: _indicesTitles.length,
       ));
 
-  Widget _brandHeader(BuildContext context) => Consumer<ProductRepository>(
-      builder: (_, productRepository, __) => _expandableRowHeader(
-          context,
-          const Text('Brand',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-          FiltersSection.brand,
-          productRepository.brandFacets));
+  Widget _brandHeader(BuildContext context) => _expandableRowHeader(
+      context,
+      const Text('Brand',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+      FiltersSection.brand,
+      context.read<ProductRepository>().brandFacets);
 
-  Widget _brand(BuildContext context) => Consumer<ProductRepository>(
-      builder: (_, productRepository, __) =>
-          StreamBuilder<List<SelectableFacet>>(
-              stream: productRepository.brandFacets,
-              builder: (context, snapshot) {
-                final facets = snapshot.data ?? [];
-                return SliverFixedExtentList(
-                    itemExtent: 44,
-                    delegate: SliverChildBuilderDelegate(
-                      (BuildContext context, int index) {
-                        final facet = facets[index];
-                        return InkWell(
-                          child: Row(children: [
-                            Icon(
-                              facet.isSelected
-                                  ? Icons.check_box
-                                  : Icons.check_box_outline_blank,
-                            ),
-                            const SizedBox(
-                              width: 5,
-                            ),
-                            Text(facet.item.value),
-                            const Spacer(),
-                            Text('${facet.item.count}'),
-                          ]),
-                          onTap: () =>
-                              productRepository.toggleBrand(facet.item.value),
-                        );
-                      },
-                      childCount: facets.length,
-                    ));
-              }));
-
-  Widget _sizeHeader(BuildContext context) => Consumer<ProductRepository>(
-      builder: (_, productRepository, __) => _expandableRowHeader(
-          context,
-          const Text('Size',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-          FiltersSection.size,
-          productRepository.sizeFacets));
-
-  Widget _size(BuildContext context) => Consumer<ProductRepository>(
-      builder: (_, productRepository, __) => StreamBuilder<
-              List<SelectableFacet>>(
-          stream: productRepository.sizeFacets,
-          builder: (context, snapshot) {
-            final facets = snapshot.data ?? [];
-            return SliverGrid(
-                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                  maxCrossAxisExtent: 65.0,
-                  mainAxisSpacing: 10.0,
-                  crossAxisSpacing: 10.0,
-                  childAspectRatio: 2.5,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (BuildContext context, int index) {
-                    final facet = facets[index];
-                    if (facet.isSelected) {
-                      return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              primary: AppTheme.darkBlue),
-                          onPressed: () =>
-                              productRepository.toggleSize(facet.item.value),
-                          child: Text(facet.item.value));
-                    } else {
-                      return OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            primary: AppTheme.darkBlue,
-                            side: const BorderSide(
-                                width: 1.0,
-                                color: AppTheme.darkBlue,
-                                style: BorderStyle.solid),
-                          ),
-                          onPressed: () =>
-                              productRepository.toggleSize(facet.item.value),
-                          child: Text(facet.item.value));
-                    }
-                  },
-                  childCount: facets.length,
-                ));
-          }));
-
-  Widget _footer(BuildContext context) => Consumer<ProductRepository>(
-        builder: (_, productRepository, __) => Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                  onPressed: () => productRepository.clearFilters(),
-                  style: OutlinedButton.styleFrom(
-                    primary: AppTheme.darkBlue,
-                    side: const BorderSide(
-                        width: 1.0,
-                        color: AppTheme.darkBlue,
-                        style: BorderStyle.solid),
-                  ),
-                  child: const Text(
-                    "Clear Filters",
-                    textAlign: TextAlign.center,
-                  )),
-            ),
-            const SizedBox(
-              width: 10,
-            ),
-            Expanded(
-                child: StreamBuilder<SearchResponse>(
-              stream: productRepository.searchResult,
-              builder: (context, snapshot) {
-                final String nbHits;
-                if (snapshot.hasData) {
-                  nbHits = ' ${snapshot.data!.nbHits} ';
-                } else {
-                  nbHits = '';
-                }
-                return ElevatedButton(
-                    style: ElevatedButton.styleFrom(primary: AppTheme.darkBlue),
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(
-                      "See $nbHits Products",
-                      textAlign: TextAlign.center,
-                    ));
+  Widget _brandSelector(BuildContext context) => StreamBuilder<List<SelectableFacet>>(
+      stream: context.read<ProductRepository>().brandFacets,
+      builder: (context, snapshot) {
+        final facets = snapshot.data ?? [];
+        return SliverFixedExtentList(
+            itemExtent: 44,
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                final facet = facets[index];
+                return InkWell(
+                  child: Row(children: [
+                    Icon(
+                      facet.isSelected
+                          ? Icons.check_box
+                          : Icons.check_box_outline_blank,
+                    ),
+                    const SizedBox(
+                      width: 5,
+                    ),
+                    Text(facet.item.value),
+                    const Spacer(),
+                    Text('${facet.item.count}'),
+                  ]),
+                  onTap: () => context
+                      .read<ProductRepository>()
+                      .toggleBrand(facet.item.value),
+                );
               },
-            )),
-          ],
-        ),
+              childCount: facets.length,
+            ));
+      });
+
+  Widget _sizeHeader(BuildContext context) => _expandableRowHeader(
+      context,
+      const Text('Size',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+      FiltersSection.size,
+      context.read<ProductRepository>().sizeFacets);
+
+  Widget _sizeSelector(BuildContext context) => StreamBuilder<List<SelectableFacet>>(
+      stream: context.read<ProductRepository>().sizeFacets,
+      builder: (context, snapshot) {
+        final productRepository = context.read<ProductRepository>();
+        final facets = snapshot.data ?? [];
+        return SliverGrid(
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 65.0,
+              mainAxisSpacing: 10.0,
+              crossAxisSpacing: 10.0,
+              childAspectRatio: 2.5,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (BuildContext context, int index) {
+                final facet = facets[index];
+                if (facet.isSelected) {
+                  return ElevatedButton(
+                      style:
+                          ElevatedButton.styleFrom(primary: AppTheme.darkBlue),
+                      onPressed: () =>
+                          productRepository.toggleSize(facet.item.value),
+                      child: Text(facet.item.value));
+                } else {
+                  return OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        primary: AppTheme.darkBlue,
+                        side: const BorderSide(
+                            width: 1.0,
+                            color: AppTheme.darkBlue,
+                            style: BorderStyle.solid),
+                      ),
+                      onPressed: () =>
+                          productRepository.toggleSize(facet.item.value),
+                      child: Text(facet.item.value));
+                }
+              },
+              childCount: facets.length,
+            ));
+      });
+
+  Widget _footer(BuildContext context) => Row(
+        children: [
+          Expanded(
+            child: OutlinedButton(
+                onPressed: () =>
+                    context.read<ProductRepository>().clearFilters(),
+                style: OutlinedButton.styleFrom(
+                  primary: AppTheme.darkBlue,
+                  side: const BorderSide(
+                      width: 1.0,
+                      color: AppTheme.darkBlue,
+                      style: BorderStyle.solid),
+                ),
+                child: const Text(
+                  "Clear Filters",
+                  textAlign: TextAlign.center,
+                )),
+          ),
+          const SizedBox(
+            width: 10,
+          ),
+          Expanded(
+              child: StreamBuilder<SearchResponse>(
+            stream: context.read<ProductRepository>().searchResult,
+            builder: (context, snapshot) {
+              final String nbHits;
+              if (snapshot.hasData) {
+                nbHits = ' ${snapshot.data!.nbHits} ';
+              } else {
+                nbHits = '';
+              }
+              return ElevatedButton(
+                  style: ElevatedButton.styleFrom(primary: AppTheme.darkBlue),
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    "See $nbHits Products",
+                    textAlign: TextAlign.center,
+                  ));
+            },
+          )),
+        ],
       );
 }

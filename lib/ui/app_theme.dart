@@ -35,7 +35,7 @@ class AppTheme {
           foregroundColor: secondaryColor,
           backgroundColor: Colors.white,
         ),
-        textTheme: TextTheme(
+        textTheme: const TextTheme(
             subtitle2: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
