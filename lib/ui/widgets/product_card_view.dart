@@ -8,7 +8,7 @@ class ProductCardView extends StatelessWidget {
   const ProductCardView(
       {Key? key,
       required this.product,
-      this.imageAlignment = Alignment.center,
+      this.imageAlignment = Alignment.bottomCenter,
       this.onTap})
       : super(key: key);
 

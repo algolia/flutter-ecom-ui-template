@@ -2,7 +2,6 @@ import 'package:flutter/widgets.dart';
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter_ecom_demo/credentials.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
-import 'package:rxdart/rxdart.dart';
 
 /// Query suggestions data repository.
 class SuggestionRepository extends ChangeNotifier {

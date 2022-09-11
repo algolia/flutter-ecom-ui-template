@@ -19,9 +19,9 @@ class ProductRepository extends ChangeNotifier {
         filterState: _filterState,
         attribute: 'available_sizes');
     pagingController.addPageRequestListener((pageKey) {
-      search((state) => state.copyWith(page: pageKey));
+      _hitsSearcher.applyState((state) => state.copyWith(page: pageKey));
     });
-    searchPage.listen((page) {
+    _searchPage.listen((page) {
       pagingController.appendPage(page.items, page.nextPageKey);
     }).onError((error) {
       pagingController.error = error;
@@ -71,8 +71,9 @@ class ProductRepository extends ChangeNotifier {
       apiKey: Credentials.searchOnlyKey);
 
   /// Get products list by query.
-  void search(SearchState Function(SearchState state) query) {
-    _hitsSearcher.applyState(query);
+  void search(String query) {
+    pagingController.refresh();
+    _hitsSearcher.applyState((state) => state.copyWith(query: query));
   }
 
   /// Toggle selection of a brand facet
@@ -133,7 +134,7 @@ class ProductRepository extends ChangeNotifier {
           response.hits.map((hit) => Product.fromJson(hit)).toList());
 
   /// Get stream of latest search page
-  Stream<ecom_page.Page<Product>> get searchPage =>
+  Stream<ecom_page.Page<Product>> get _searchPage =>
       _hitsSearcher.responses.map((response) {
         final isLastPage = response.page == response.nbPages;
         final nextPageKey = isLastPage ? null : response.page + 1;

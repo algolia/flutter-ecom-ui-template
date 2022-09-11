@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/data/search_history_repository.dart';
+import 'package:flutter_ecom_demo/data/history_repository.dart';
 import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/search_results_screen.dart';
@@ -10,33 +10,13 @@ import 'package:flutter_ecom_demo/ui/screens/search/components/suggestion_row_vi
 import 'package:provider/provider.dart';
 import '../../app_theme.dart';
 
-class AutocompleteScreen extends StatefulWidget {
+class AutocompleteScreen extends StatelessWidget {
   const AutocompleteScreen({Key? key}) : super(key: key);
 
   @override
-  State<AutocompleteScreen> createState() => _AutocompleteScreenState();
-}
-
-class _AutocompleteScreenState extends State<AutocompleteScreen> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void _onSubmitSearch(String query) {
-    context.read<SearchHistoryRepository>().addToHistory(query);
-    final productRepository = context.read<ProductRepository>();
-    productRepository.pagingController.refresh();
-    productRepository.search((state) => state.copyWith(query: query));
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (BuildContext context) => const SearchResultsScreen(),
-        ));
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final searchHistoryRepository = context.read<SearchHistoryRepository>();
+    final suggestionRepository = context.read<SuggestionRepository>();
     return Scaffold(
         body: CustomScrollView(slivers: [
       SliverAppBar(
@@ -48,8 +28,8 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
         titleSpacing: 0,
         elevation: 0,
         title: SearchHeaderView(
-          controller: context.read<SuggestionRepository>().searchTextController,
-          onSubmitted: _onSubmitSearch,
+          controller: suggestionRepository.searchTextController,
+          onSubmitted: (query) => _onSubmitSearch(query, context),
         ),
       ),
       const SliverToBoxAdapter(
@@ -57,7 +37,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
         height: 10,
       )),
       _sectionHeader(
-        context.read<SearchHistoryRepository>().history,
+        searchHistoryRepository.history,
         Row(
           children: [
             const Text(
@@ -66,32 +46,31 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
             ),
             const Spacer(),
             TextButton(
-                onPressed: () =>
-                    context.read<SearchHistoryRepository>().clearHistory(),
+                onPressed: () => searchHistoryRepository.clearHistory(),
                 child: const Text("Clear",
                     style: TextStyle(color: AppTheme.nebula)))
           ],
         ),
       ),
       _sectionBody(
-          context.read<SearchHistoryRepository>().history,
+          context,
+          searchHistoryRepository.history,
           (String item) => HistoryRowView(
               suggestion: item,
-              onRemove: (item) => context
-                  .read<SearchHistoryRepository>()
-                  .removeFromHistory(item))),
+              onRemove: (item) =>
+                  searchHistoryRepository.removeFromHistory(item))),
       _sectionHeader(
-          context.read<SearchHistoryRepository>().history,
+          suggestionRepository.suggestions,
           const Text(
             "Popular searches",
             style: TextStyle(fontWeight: FontWeight.bold),
           )),
       _sectionBody(
-          context.read<SuggestionRepository>().suggestions,
+          context,
+          suggestionRepository.suggestions,
           (QuerySuggestion item) => SuggestionRowView(
               suggestion: item,
-              onComplete:
-                  context.read<SuggestionRepository>().completeSuggestion)),
+              onComplete: suggestionRepository.completeSuggestion)),
     ]));
   }
 
@@ -111,7 +90,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
                     )));
           });
 
-  Widget _sectionBody<Item>(
+  Widget _sectionBody<Item>(BuildContext context,
           Stream<List<Item>> itemsStream, Function(Item) rowBuilder) =>
       StreamBuilder<List<Item>>(
           stream: itemsStream,
@@ -132,11 +111,21 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
                             return InkWell(
                                 onTap: () {
                                   final query = item.toString();
-                                  _onSubmitSearch(query);
+                                  _onSubmitSearch(query, context);
                                 },
                                 child: rowBuilder(item));
                           },
                           childCount: suggestions.length,
                         ))));
           });
+
+  void _onSubmitSearch(String query, BuildContext context) {
+    context.read<SearchHistoryRepository>().addToHistory(query);
+    context.read<ProductRepository>().search(query);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => const SearchResultsScreen(),
+        ));
+  }
 }

@@ -18,8 +18,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  void _presentProductPage(BuildContext context, String productID,
-      ProductRepository productRepository) {
+  void _presentProductPage(BuildContext context, String productID) {
+    final productRepository = context.read<ProductRepository>();
     productRepository.getProduct(productID).then((product) => Navigator.push(
         context,
         MaterialPageRoute(
@@ -27,23 +27,20 @@ class _HomeScreenState extends State<HomeScreen> {
         )));
   }
 
-  void _presentAutoComplete(BuildContext context) {
-    Navigator.of(context).push(PageRouteBuilder(
-      pageBuilder: (_, __, ___) => const AutocompleteScreen(),
-      fullscreenDialog: true,
-    ));
-  }
+  void _presentAutoComplete(BuildContext context) =>
+      Navigator.of(context).push(PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const AutocompleteScreen(),
+        fullscreenDialog: true,
+      ));
 
-  Widget _productView(BuildContext context, Product product) {
-    return Consumer<ProductRepository>(
-        builder: (context, productRepository, child) {
-      return ProductCardView(
-          product: product,
-          imageAlignment: Alignment.bottomCenter,
-          onTap: (objectID) =>
-              _presentProductPage(context, objectID, productRepository));
-    });
-  }
+  Widget _productView(BuildContext context, Product product) => ProductCardView(
+      product: product,
+      onTap: (objectID) => _presentProductPage(context, objectID));
+
+  Widget _productsView(BuildContext context, String title, Stream<List<Product>> products) => ProductsView(
+      title: title,
+      items: products,
+      productWidget: _productView);
 
   @override
   Widget build(BuildContext context) {
@@ -105,25 +102,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   const HomeBannerView(),
                   Padding(
                       padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
-                      child: Consumer<ProductRepository>(
-                          builder: (context, productRepository, child) {
-                        return Column(
-                          children: [
-                            ProductsView(
-                                title: 'New in shoes',
-                                items: productRepository.shoes,
-                                productWidget: _productView),
-                            ProductsView(
-                                title: 'Spring/Summer 2021',
-                                items: productRepository.seasonalProducts,
-                                productWidget: _productView),
-                            ProductsView(
-                                title: 'Recommended for you',
-                                items: productRepository.recommendedProducts,
-                                productWidget: _productView),
-                          ],
-                        );
-                      })),
+                      child: Column(
+                        children: [
+                          _productsView(context, 'New in shoes', context.read<ProductRepository>().shoes),
+                          _productsView(context, 'Spring/Summer 2021', context.read<ProductRepository>().seasonalProducts),
+                          _productsView(context, 'Recommended for you', context.read<ProductRepository>().recommendedProducts),
+                        ],
+                      )),
                 ],
               ),
             )));

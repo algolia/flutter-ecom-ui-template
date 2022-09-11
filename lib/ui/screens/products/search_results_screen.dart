@@ -25,6 +25,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final productRepository = context.read<ProductRepository>();
     return Scaffold(
       key: _key,
       appBar: const AppBarView(),
@@ -33,28 +34,26 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
       ),
       body: Column(
         children: [
-          Consumer<ProductRepository>(
-              builder: (_, productRepository, __) =>
-                  StreamBuilder<SearchResponse>(
-                    stream: productRepository.searchResult,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        final data = snapshot.data!;
-                        return StreamBuilder<int>(
-                            stream: productRepository.appliedFiltersCount,
-                            builder: (context, snapshot) => SearchHeaderView(
-                                  query: data.query,
-                                  resultsCount: data.nbHits,
-                                  filtersButtonTapped: () {
-                                    _key.currentState?.openEndDrawer();
-                                  },
-                                  appliedFiltersCount: snapshot.data ?? 0,
-                                ));
-                      } else {
-                        return Container();
-                      }
-                    },
-                  )),
+          StreamBuilder<SearchResponse>(
+            stream: productRepository.searchResult,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final data = snapshot.data!;
+                return StreamBuilder<int>(
+                    stream: productRepository.appliedFiltersCount,
+                    builder: (context, snapshot) => SearchHeaderView(
+                          query: data.query,
+                          resultsCount: data.nbHits,
+                          filtersButtonTapped: () {
+                            _key.currentState?.openEndDrawer();
+                          },
+                          appliedFiltersCount: snapshot.data ?? 0,
+                        ));
+              } else {
+                return Container();
+              }
+            },
+          ),
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ModeSwitcherView(
@@ -62,11 +61,9 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                   onPressed: (display) => setState(() => _display = display))),
           Expanded(
             child: Padding(
-                padding: const EdgeInsets.only(top: 10, left: 8, right: 8),
-                child: Consumer<ProductRepository>(
-                  builder: (_, productRepository, __) =>
-                      _hitsDisplay(productRepository),
-                )),
+              padding: const EdgeInsets.only(top: 10, left: 8, right: 8),
+              child: _hitsDisplay(productRepository),
+            ),
           ),
         ],
       ),

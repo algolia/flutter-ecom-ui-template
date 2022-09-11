@@ -30,7 +30,7 @@ class HitsListView extends StatelessWidget {
               },
               separatorBuilder: (context, index) => const SizedBox(width: 10));
         } else {
-          return const LinearProgressIndicator();
+          return const CircularProgressIndicator();
         }
       },
     );
