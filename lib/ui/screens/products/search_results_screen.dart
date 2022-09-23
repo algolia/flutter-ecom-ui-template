@@ -1,6 +1,8 @@
-import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ecom_demo/data/product_repository.dart';
+import 'package:flutter_ecom_demo/data/search_repository.dart';
+import 'package:flutter_ecom_demo/model/product.dart';
+import 'package:flutter_ecom_demo/model/search_metadata.dart';
 import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/components/mode_switcher_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/components/no_results_view.dart';
@@ -8,6 +10,7 @@ import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_grid
 import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_list_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/components/search_header_view.dart';
 import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 
 import '../filters/filters_screen.dart';
@@ -25,7 +28,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final productRepository = context.read<ProductRepository>();
+    final searchRepository = context.read<SearchRepository>();
     return Scaffold(
       key: _key,
       appBar: const AppBarView(),
@@ -34,13 +37,13 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
       ),
       body: Column(
         children: [
-          StreamBuilder<SearchResponse>(
-            stream: productRepository.searchResult,
+          StreamBuilder<SearchMetadata>(
+            stream: searchRepository.searchMetadata,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final data = snapshot.data!;
                 return StreamBuilder<int>(
-                    stream: productRepository.appliedFiltersCount,
+                    stream: searchRepository.appliedFiltersCount,
                     builder: (context, snapshot) => SearchHeaderView(
                           query: data.query,
                           resultsCount: data.nbHits,
@@ -62,7 +65,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 10, left: 8, right: 8),
-              child: _hitsDisplay(productRepository),
+              child: _hitsDisplay(searchRepository.pagingController),
             ),
           ),
         ],
@@ -70,26 +73,24 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
     );
   }
 
-  Widget _hitsDisplay(ProductRepository productRepository) {
+  Widget _hitsDisplay(PagingController<int, Product> controller) {
     switch (_display) {
       case HitsDisplay.list:
         return PagedHitsListView(
-            pagingController: productRepository.pagingController,
-            onHitClick: (objectID) =>
-                _presentProductPage(context, objectID, productRepository),
+            pagingController: controller,
+            onHitClick: (objectID) => _presentProductPage(context, objectID),
             noItemsFound: _noResults);
       case HitsDisplay.grid:
         return PagedHitsGridView(
-            pagingController: productRepository.pagingController,
-            onHitClick: (objectID) =>
-                _presentProductPage(context, objectID, productRepository),
+            pagingController: controller,
+            onHitClick: (objectID) => _presentProductPage(context, objectID),
             noItemsFound: _noResults);
     }
   }
 
-  void _presentProductPage(BuildContext context, String productID,
-      ProductRepository productRepository) {
-    productRepository.getProduct(productID).then((product) => Navigator.push(
+  void _presentProductPage(BuildContext context, String productID) {
+    final repository = context.read<ProductRepository>();
+    repository.getProduct(productID).then((product) => Navigator.push(
         context,
         MaterialPageRoute(
           builder: (BuildContext context) => ProductScreen(product: product),

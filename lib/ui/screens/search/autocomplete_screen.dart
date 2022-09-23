@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/data/history_repository.dart';
+import 'package:flutter_ecom_demo/data/search_repository.dart';
 import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
 import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 import 'package:flutter_ecom_demo/ui/screens/products/search_results_screen.dart';
@@ -8,6 +8,7 @@ import 'package:flutter_ecom_demo/ui/screens/search/components/history_row_view.
 import 'package:flutter_ecom_demo/ui/screens/search/components/search_header_view.dart';
 import 'package:flutter_ecom_demo/ui/screens/search/components/suggestion_row_view.dart';
 import 'package:provider/provider.dart';
+
 import '../../app_theme.dart';
 
 class AutocompleteScreen extends StatelessWidget {
@@ -121,7 +122,7 @@ class AutocompleteScreen extends StatelessWidget {
 
   void _onSubmitSearch(String query, BuildContext context) {
     context.read<SearchHistoryRepository>().addToHistory(query);
-    context.read<ProductRepository>().search(query);
+    context.read<SearchRepository>().search(query);
     Navigator.push(
         context,
         MaterialPageRoute(

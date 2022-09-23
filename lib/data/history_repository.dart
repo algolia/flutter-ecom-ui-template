@@ -1,18 +1,9 @@
-import 'package:flutter/widgets.dart';
 import 'package:rxdart/rxdart.dart';
 
 /// Search history data repository.
-class SearchHistoryRepository extends ChangeNotifier {
-  SearchHistoryRepository._internal();
-
-  static final SearchHistoryRepository _instance =
-      SearchHistoryRepository._internal();
-
-  factory SearchHistoryRepository() {
-    return _instance;
-  }
-
-  final BehaviorSubject<List<String>> _history = BehaviorSubject.seeded(['jackets']);
+class SearchHistoryRepository {
+  final BehaviorSubject<List<String>> _history =
+      BehaviorSubject.seeded(['jackets']);
 
   Stream<List<String>> get history => _history;
 
@@ -33,5 +24,4 @@ class SearchHistoryRepository extends ChangeNotifier {
   void clearHistory() {
     _history.sink.add([]);
   }
-
 }

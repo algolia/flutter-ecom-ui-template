@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
 import 'package:flutter_ecom_demo/data/history_repository.dart';
+import 'package:flutter_ecom_demo/data/product_repository.dart';
+import 'package:flutter_ecom_demo/data/search_repository.dart';
 import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
 import 'package:flutter_ecom_demo/ui/app_theme.dart';
 import 'package:flutter_ecom_demo/ui/screens/home/home_screen.dart';
@@ -8,14 +9,15 @@ import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(
-    MultiProvider(providers: [
-      ChangeNotifierProvider(create: (context) => ProductRepository()),
-      ChangeNotifierProvider(create: (context) => SuggestionRepository()),
-      ChangeNotifierProvider(create: (context) => SearchHistoryRepository()),
+  runApp(MultiProvider(
+    providers: [
+      Provider(create: (context) => ProductRepository()),
+      Provider(create: (context) => SuggestionRepository()),
+      Provider(create: (context) => SearchRepository()),
+      Provider(create: (context) => SearchHistoryRepository()),
     ],
-    child: const SWApp(),)
-  );
+    child: const SWApp(),
+  ));
 }
 
 /// S&W Fashion App entry point.

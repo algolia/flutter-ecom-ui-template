@@ -6,7 +6,7 @@ class QuerySuggestion {
   String query;
   HighlightedString? highlighted;
 
-  static QuerySuggestion fromHit(Hit hit) {
+  static QuerySuggestion fromJson(Hit hit) {
     final highlighted = hit.getHighlightedString('query');
     return QuerySuggestion(hit["query"], highlighted);
   }

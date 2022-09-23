@@ -1,3 +1,5 @@
+import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
+
 class Product {
   final String? objectID;
   final String? name;
@@ -120,5 +122,19 @@ class ProductColor {
   @override
   String toString() {
     return 'ProductColor{filterGroup: $filterGroup, originalName: $originalName}';
+  }
+}
+
+class ProductsPage {
+  const ProductsPage(this.items, this.nextPageKey);
+
+  final List<Product> items;
+  final int? nextPageKey;
+
+  factory ProductsPage.fromResponse(SearchResponse response) {
+    final items = response.hits.map(Product.fromJson).toList();
+    final isLastPage = response.page >= response.nbPages;
+    final nextPageKey = isLastPage ? null : response.page + 1;
+    return ProductsPage(items, nextPageKey);
   }
 }
