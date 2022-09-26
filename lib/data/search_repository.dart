@@ -9,15 +9,15 @@ class SearchRepository {
   final PagingController<int, Product> pagingController =
       PagingController(firstPageKey: 0);
 
+  /// Component holding search filters
+  final _filterState = FilterState();
+
   /// Products Hits Searcher.
-  final _hitsSearcher = HitsSearcher(
+  late final _hitsSearcher = HitsSearcher(
     applicationID: Credentials.applicationID,
     apiKey: Credentials.searchOnlyKey,
     indexName: Credentials.hitsIndex,
-  );
-
-  /// Component holding search filters
-  final _filterState = FilterState();
+  )..connectFilterState(_filterState);
 
   /// Brands facet lists
   late final _brandFacetList = FacetList(
@@ -34,8 +34,6 @@ class SearchRepository {
   );
 
   SearchRepository() {
-    _hitsSearcher.connectFilterState(_filterState);
-
     pagingController.addPageRequestListener((pageKey) {
       _hitsSearcher.applyState((state) => state.copyWith(page: pageKey));
     });
