@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/history_repository.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/data/search_repository.dart';
-import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
-import 'package:flutter_ecom_demo/ui/app_theme.dart';
-import 'package:flutter_ecom_demo/ui/screens/home/home_screen.dart';
 import 'package:provider/provider.dart';
+
+import 'data/product_repository.dart';
+import 'data/search_repository.dart';
+import 'data/suggestion_repository.dart';
+import 'ui/app_theme.dart';
+import 'ui/screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -14,7 +14,6 @@ void main() async {
       Provider(create: (context) => ProductRepository()),
       Provider(create: (context) => SuggestionRepository()),
       Provider(create: (context) => SearchRepository()),
-      Provider(create: (context) => SearchHistoryRepository()),
     ],
     child: const SWApp(),
   ));

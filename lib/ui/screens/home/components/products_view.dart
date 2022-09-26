@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/ui/screens/home/components/section_header.dart';
-import 'package:flutter_ecom_demo/ui/screens/home/components/hits_list_view.dart';
+
+import '../../../../model/product.dart';
+import 'hits_list_view.dart';
+import 'section_header.dart';
 
 typedef ProductWidgetBuilder = Widget Function(
     BuildContext context, Product product);

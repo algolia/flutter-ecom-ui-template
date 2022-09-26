@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/ui/app_theme.dart';
+import '../../../app_theme.dart';
 
 class SearchHeaderView extends StatelessWidget {
   const SearchHeaderView({Key? key, required this.controller, this.onSubmitted})

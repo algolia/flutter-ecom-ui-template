@@ -1,22 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/history_repository.dart';
-import 'package:flutter_ecom_demo/data/search_repository.dart';
-import 'package:flutter_ecom_demo/data/suggestion_repository.dart';
-import 'package:flutter_ecom_demo/model/query_suggestion.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/search_results_screen.dart';
-import 'package:flutter_ecom_demo/ui/screens/search/components/history_row_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/search/components/search_header_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/search/components/suggestion_row_view.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/search_repository.dart';
+import '../../../data/suggestion_repository.dart';
+import '../../../model/query_suggestion.dart';
 import '../../app_theme.dart';
+import '../products/search_results_screen.dart';
+import 'components/history_row_view.dart';
+import 'components/search_header_view.dart';
+import 'components/suggestion_row_view.dart';
 
-class AutocompleteScreen extends StatelessWidget {
+class AutocompleteScreen extends StatefulWidget {
   const AutocompleteScreen({Key? key}) : super(key: key);
 
   @override
+  State<AutocompleteScreen> createState() => _AutocompleteScreenState();
+}
+
+class _AutocompleteScreenState extends State<AutocompleteScreen> {
+  final _searchTextController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    final suggestionRepository = context.read<SuggestionRepository>();
+    _searchTextController.addListener(
+        () => suggestionRepository.query(_searchTextController.text));
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final searchHistoryRepository = context.read<SearchHistoryRepository>();
     final suggestionRepository = context.read<SuggestionRepository>();
     return Scaffold(
         body: CustomScrollView(slivers: [
@@ -29,7 +42,7 @@ class AutocompleteScreen extends StatelessWidget {
         titleSpacing: 0,
         elevation: 0,
         title: SearchHeaderView(
-          controller: suggestionRepository.searchTextController,
+          controller: _searchTextController,
           onSubmitted: (query) => _onSubmitSearch(query, context),
         ),
       ),
@@ -38,7 +51,7 @@ class AutocompleteScreen extends StatelessWidget {
         height: 10,
       )),
       _sectionHeader(
-        searchHistoryRepository.history,
+        suggestionRepository.history,
         Row(
           children: [
             const Text(
@@ -47,7 +60,7 @@ class AutocompleteScreen extends StatelessWidget {
             ),
             const Spacer(),
             TextButton(
-                onPressed: () => searchHistoryRepository.clearHistory(),
+                onPressed: () => suggestionRepository.clearHistory(),
                 child: const Text("Clear",
                     style: TextStyle(color: AppTheme.nebula)))
           ],
@@ -55,11 +68,11 @@ class AutocompleteScreen extends StatelessWidget {
       ),
       _sectionBody(
           context,
-          searchHistoryRepository.history,
+          suggestionRepository.history,
           (String item) => HistoryRowView(
               suggestion: item,
               onRemove: (item) =>
-                  searchHistoryRepository.removeFromHistory(item))),
+                  suggestionRepository.removeFromHistory(item))),
       _sectionHeader(
           suggestionRepository.suggestions,
           const Text(
@@ -71,7 +84,13 @@ class AutocompleteScreen extends StatelessWidget {
           suggestionRepository.suggestions,
           (QuerySuggestion item) => SuggestionRowView(
               suggestion: item,
-              onComplete: suggestionRepository.completeSuggestion)),
+              onComplete: (suggestion) =>
+                  _searchTextController.value = TextEditingValue(
+                    text: suggestion,
+                    selection: TextSelection.fromPosition(
+                      TextPosition(offset: suggestion.length),
+                    ),
+                  ))),
     ]));
   }
 
@@ -121,12 +140,18 @@ class AutocompleteScreen extends StatelessWidget {
           });
 
   void _onSubmitSearch(String query, BuildContext context) {
-    context.read<SearchHistoryRepository>().addToHistory(query);
+    context.read<SuggestionRepository>().addToHistory(query);
     context.read<SearchRepository>().search(query);
     Navigator.push(
         context,
         MaterialPageRoute(
           builder: (BuildContext context) => const SearchResultsScreen(),
         ));
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _searchTextController.dispose();
   }
 }

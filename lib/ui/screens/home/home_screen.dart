@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/ui/screens/home/components/home_banner_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
-import 'package:flutter_ecom_demo/ui/screens/search/autocomplete_screen.dart';
-import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/product_repository.dart';
+import '../../../model/product.dart';
+import '../../widgets/app_bar_view.dart';
+import '../../widgets/product_card_view.dart';
+import '../product/product_screen.dart';
+import '../search/autocomplete_screen.dart';
+import 'components/home_banner_view.dart';
 import 'components/products_view.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -37,10 +37,9 @@ class _HomeScreenState extends State<HomeScreen> {
       product: product,
       onTap: (objectID) => _presentProductPage(context, objectID));
 
-  Widget _productsView(BuildContext context, String title, Stream<List<Product>> products) => ProductsView(
-      title: title,
-      items: products,
-      productWidget: _productView);
+  Widget _productsView(
+          BuildContext context, String title, Stream<List<Product>> products) =>
+      ProductsView(title: title, items: products, productWidget: _productView);
 
   @override
   Widget build(BuildContext context) {
@@ -104,9 +103,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
                       child: Column(
                         children: [
-                          _productsView(context, 'New in shoes', context.read<ProductRepository>().shoes),
-                          _productsView(context, 'Spring/Summer 2021', context.read<ProductRepository>().seasonalProducts),
-                          _productsView(context, 'Recommended for you', context.read<ProductRepository>().recommendedProducts),
+                          _productsView(context, 'New in shoes',
+                              context.read<ProductRepository>().shoes),
+                          _productsView(
+                              context,
+                              'Spring/Summer 2021',
+                              context
+                                  .read<ProductRepository>()
+                                  .seasonalProducts),
+                          _productsView(
+                              context,
+                              'Recommended for you',
+                              context
+                                  .read<ProductRepository>()
+                                  .recommendedProducts),
                         ],
                       )),
                 ],

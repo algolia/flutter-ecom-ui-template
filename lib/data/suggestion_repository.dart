@@ -1,18 +1,11 @@
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
-import 'package:flutter/widgets.dart';
-import 'package:flutter_ecom_demo/credentials.dart';
-import 'package:flutter_ecom_demo/model/query_suggestion.dart';
+import 'package:rxdart/rxdart.dart';
+
+import '../credentials.dart';
+import '../model/query_suggestion.dart';
 
 /// Query suggestions data repository.
 class SuggestionRepository {
-  SuggestionRepository() {
-    searchTextController.addListener(
-        () => _suggestionsSearcher.query(searchTextController.text));
-  }
-
-  /// Search text field controller.
-  final searchTextController = TextEditingController();
-
   /// Hits Searcher for suggestions index
   final _suggestionsSearcher = HitsSearcher(
     applicationID: Credentials.applicationID,
@@ -20,18 +13,41 @@ class SuggestionRepository {
     indexName: Credentials.suggestionsIndex,
   );
 
+  /// Get query suggestions for a given query string.
+  void query(String query) {
+    _suggestionsSearcher.query(query);
+  }
+
   /// Get query suggestions stream
   Stream<List<QuerySuggestion>> get suggestions => _suggestionsSearcher
       .responses
       .map((response) => response.hits.map(QuerySuggestion.fromJson).toList());
 
-  /// Replace textController input field with suggestion
-  void completeSuggestion(String suggestion) {
-    searchTextController.value = TextEditingValue(
-      text: suggestion,
-      selection: TextSelection.fromPosition(
-        TextPosition(offset: suggestion.length),
-      ),
-    );
+  /// In-memory store of submitted queries.
+  final BehaviorSubject<List<String>> _history =
+      BehaviorSubject.seeded(['jackets']);
+
+  /// Stream of previously submitted queries.
+  Stream<List<String>> get history => _history;
+
+  /// Add a query to queries history store.
+  void addToHistory(String query) {
+    if (query.isEmpty) return;
+    final _current = _history.value;
+    _current.removeWhere((element) => element == query);
+    _current.add(query);
+    _history.sink.add(_current);
+  }
+
+  /// Remove a query from queries history store.
+  void removeFromHistory(String query) {
+    final _current = _history.value;
+    _current.removeWhere((element) => element == query);
+    _history.sink.add(_current);
+  }
+
+  /// Clear everything from queries history store.
+  void clearHistory() {
+    _history.sink.add([]);
   }
 }

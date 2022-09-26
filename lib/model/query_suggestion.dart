@@ -7,12 +7,10 @@ class QuerySuggestion {
   HighlightedString? highlighted;
 
   static QuerySuggestion fromJson(Hit hit) {
-    final highlighted = hit.getHighlightedString('query');
+    final highlighted = hit.getHighlightedString('query', inverted: true);
     return QuerySuggestion(hit["query"], highlighted);
   }
 
   @override
-  String toString() {
-    return query;
-  }
+  String toString() => query;
 }

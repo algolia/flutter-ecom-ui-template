@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../model/query_suggestion.dart';
 
 class SuggestionRowView extends StatelessWidget {
   const SuggestionRowView({Key? key, required this.suggestion, this.onComplete})

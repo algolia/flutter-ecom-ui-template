@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/ui/app_theme.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/components/image_slider_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/components/price_row_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/components/sizes_grid_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/rating_view.dart';
+
+import '../../../model/product.dart';
+import '../../app_theme.dart';
+import '../../widgets/app_bar_view.dart';
+import '../../widgets/rating_view.dart';
+import 'components/image_slider_view.dart';
+import 'components/price_row_view.dart';
+import 'components/sizes_grid_view.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({Key? key, required this.product}) : super(key: key);
@@ -71,7 +72,8 @@ class _ProductScreenState extends State<ProductScreen> {
                         ? const SizedBox.shrink()
                         : SizesGridView(
                             sizes: product.sizes ?? [],
-                            selectedSizes: _selectedSize == null ? {} : {_selectedSize!},
+                            selectedSizes:
+                                _selectedSize == null ? {} : {_selectedSize!},
                             didSelectSize: (size) => setState(() {
                                   _selectedSize = size;
                                 })),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/ui/screens/home/components/products_view.dart';
+
+import '../../../../model/product.dart';
+import 'products_view.dart';
 
 class HitsListView extends StatelessWidget {
   const HitsListView(

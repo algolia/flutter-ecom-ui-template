@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/data/search_repository.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/model/search_metadata.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/mode_switcher_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/no_results_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_grid_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_list_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/search_header_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/product_repository.dart';
+import '../../../data/search_repository.dart';
+import '../../../model/product.dart';
+import '../../../model/search_metadata.dart';
+import '../../widgets/app_bar_view.dart';
 import '../filters/filters_screen.dart';
+import '../product/product_screen.dart';
+import 'components/mode_switcher_view.dart';
+import 'components/no_results_view.dart';
+import 'components/paged_hits_grid_view.dart';
+import 'components/paged_hits_list_view.dart';
+import 'components/search_header_view.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({Key? key}) : super(key: key);

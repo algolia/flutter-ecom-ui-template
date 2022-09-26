@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
+import '../../model/product.dart';
 
 class ColorIndicatorView extends StatelessWidget {
   const ColorIndicatorView({

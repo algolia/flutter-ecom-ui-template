@@ -1,9 +1,9 @@
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/search_repository.dart';
-import 'package:flutter_ecom_demo/model/search_metadata.dart';
 import 'package:provider/provider.dart';
 
+import '../../../data/search_repository.dart';
+import '../../../model/search_metadata.dart';
 import '../../app_theme.dart';
 
 class FiltersScreen extends StatefulWidget {
