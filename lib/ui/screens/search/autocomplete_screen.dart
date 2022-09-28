@@ -21,14 +21,6 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
   final _searchTextController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    final suggestionRepository = context.read<SuggestionRepository>();
-    _searchTextController.addListener(
-        () => suggestionRepository.query(_searchTextController.text));
-  }
-
-  @override
   Widget build(BuildContext context) {
     final suggestionRepository = context.read<SuggestionRepository>();
     return Scaffold(
@@ -44,6 +36,7 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
         title: SearchHeaderView(
           controller: _searchTextController,
           onSubmitted: (query) => _onSubmitSearch(query, context),
+          onChanged: suggestionRepository.query,
         ),
       ),
       const SliverToBoxAdapter(

@@ -8,4 +8,9 @@ class SearchMetadata {
 
   factory SearchMetadata.fromResponse(SearchResponse response) =>
       SearchMetadata(response.query, response.nbHits);
+
+  @override
+  String toString() {
+    return 'SearchMetadata{query: $query, nbHits: $nbHits}';
+  }
 }

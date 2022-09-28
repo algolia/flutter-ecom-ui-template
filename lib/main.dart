@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
 import 'data/product_repository.dart';
@@ -9,6 +11,7 @@ import 'ui/screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  _setupLogging();
   runApp(MultiProvider(
     providers: [
       Provider(create: (context) => ProductRepository()),
@@ -17,6 +20,15 @@ void main() async {
     ],
     child: const SWApp(),
   ));
+}
+
+void _setupLogging() {
+  if (kDebugMode) {
+    Logger.root.level = Level.ALL; // defaults to Level.INFO
+    Logger.root.onRecord.listen((record) {
+      print('${record.level.name}: ${record.time}: ${record.message}');
+    });
+  }
 }
 
 /// S&W Fashion App entry point.

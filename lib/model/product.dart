@@ -126,15 +126,22 @@ class ProductColor {
 }
 
 class ProductsPage {
-  const ProductsPage(this.items, this.nextPageKey);
+  const ProductsPage(this.items, this.page, this.nextPage);
 
   final List<Product> items;
-  final int? nextPageKey;
+  final int page;
+  final int? nextPage;
 
   factory ProductsPage.fromResponse(SearchResponse response) {
     final items = response.hits.map(Product.fromJson).toList();
+    final currentPage = response.page;
     final isLastPage = response.page >= response.nbPages;
-    final nextPageKey = isLastPage ? null : response.page + 1;
-    return ProductsPage(items, nextPageKey);
+    final nextPage = isLastPage ? null : response.page + 1;
+    return ProductsPage(items, currentPage, nextPage);
+  }
+
+  @override
+  String toString() {
+    return 'ProductsPage{page: $page, nextPage: $nextPage, items: $items}';
   }
 }

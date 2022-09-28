@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:provider/provider.dart';
@@ -25,6 +27,23 @@ class SearchResultsScreen extends StatefulWidget {
 class _SearchResultsScreen extends State<SearchResultsScreen> {
   HitsDisplay _display = HitsDisplay.grid;
   final GlobalKey<ScaffoldState> _key = GlobalKey();
+
+  final PagingController<int, Product> _pagingController =
+      PagingController(firstPageKey: 0);
+
+  late final StreamSubscription _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    final searchRepository = context.read<SearchRepository>();
+    _pagingController.addPageRequestListener(searchRepository.setPage);
+    _subscription = searchRepository.productsPage.listen((products) {
+      if (products.page == 0) _pagingController.refresh();
+      _pagingController.appendPage(products.items, products.nextPage);
+    })
+      ..onError((error) => _pagingController.error = error);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +84,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(top: 10, left: 8, right: 8),
-              child: _hitsDisplay(searchRepository.pagingController),
+              child: _hitsDisplay(),
             ),
           ),
         ],
@@ -73,16 +92,16 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
     );
   }
 
-  Widget _hitsDisplay(PagingController<int, Product> controller) {
+  Widget _hitsDisplay() {
     switch (_display) {
       case HitsDisplay.list:
         return PagedHitsListView(
-            pagingController: controller,
+            pagingController: _pagingController,
             onHitClick: (objectID) => _presentProductPage(context, objectID),
             noItemsFound: _noResults);
       case HitsDisplay.grid:
         return PagedHitsGridView(
-            pagingController: controller,
+            pagingController: _pagingController,
             onHitClick: (objectID) => _presentProductPage(context, objectID),
             noItemsFound: _noResults);
     }
@@ -104,5 +123,7 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
   @override
   void dispose() {
     super.dispose();
+    _subscription.cancel();
+    _pagingController.dispose();
   }
 }

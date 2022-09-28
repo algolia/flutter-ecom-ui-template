@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+
 import '../../../app_theme.dart';
 
 class SearchHeaderView extends StatelessWidget {
-  const SearchHeaderView({Key? key, required this.controller, this.onSubmitted})
+  const SearchHeaderView(
+      {Key? key, required this.controller, this.onSubmitted, this.onChanged})
       : super(key: key);
 
   final TextEditingController controller;
+  final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmitted;
 
   @override
@@ -14,9 +17,10 @@ class SearchHeaderView extends StatelessWidget {
       children: [
         Expanded(
           child: TextField(
-            controller: controller,
             autofocus: true,
+            controller: controller,
             onSubmitted: onSubmitted,
+            onChanged: onChanged,
             decoration: const InputDecoration(
                 border: InputBorder.none,
                 hintText: "Search products, articles, faq, ..."),

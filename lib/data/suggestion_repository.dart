@@ -19,7 +19,7 @@ class SuggestionRepository {
   }
 
   /// Get query suggestions stream
-  Stream<List<QuerySuggestion>> get suggestions => _suggestionsSearcher
+  late final Stream<List<QuerySuggestion>> suggestions = _suggestionsSearcher
       .responses
       .map((response) => response.hits.map(QuerySuggestion.fromJson).toList());
 

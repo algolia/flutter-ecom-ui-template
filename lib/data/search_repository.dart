@@ -1,14 +1,11 @@
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
-import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:flutter_ecom_demo/model/sorting.dart';
 
 import '../credentials.dart';
 import '../model/product.dart';
 import '../model/search_metadata.dart';
 
 class SearchRepository {
-  final PagingController<int, Product> pagingController =
-      PagingController(firstPageKey: 0);
-
   /// Component holding search filters
   final _filterState = FilterState();
 
@@ -33,21 +30,14 @@ class SearchRepository {
     attribute: 'available_sizes',
   );
 
-  SearchRepository() {
-    pagingController.addPageRequestListener((pageKey) {
-      _hitsSearcher.applyState((state) => state.copyWith(page: pageKey));
-    });
+  SearchRepository() {}
 
-    _searchPage.listen((page) {
-      pagingController.appendPage(page.items, page.nextPageKey);
-    }).onError((error) {
-      pagingController.error = error;
-    });
+  void setPage(int page) {
+    _hitsSearcher.applyState((state) => state.copyWith(page: page));
   }
 
   /// Get products list by query.
   void search(String query) {
-    pagingController.refresh();
     _hitsSearcher.query(query);
   }
 
@@ -56,20 +46,20 @@ class SearchRepository {
       _hitsSearcher.responses.map(SearchMetadata.fromResponse);
 
   /// Get stream of latest search page
-  Stream<ProductsPage> get _searchPage =>
+  Stream<ProductsPage> get productsPage =>
       _hitsSearcher.responses.map(ProductsPage.fromResponse);
 
   Stream<int> get appliedFiltersCount =>
       _filterState.filters.map((event) => event.getFilters().length);
 
   /// Get the name of currently selected index
-  Stream<String> get selectedIndexName =>
-      _hitsSearcher.state.map((state) => state.indexName);
+  Stream<Sorting> get selectedIndexName =>
+      _hitsSearcher.state.map((state) => Sorting.of(state.indexName));
 
   /// Update the name of the index to target
   void selectIndexName(String indexName) {
-    pagingController.refresh();
-    _hitsSearcher.applyState((state) => state.copyWith(indexName: indexName));
+    _hitsSearcher
+        .applyState((state) => state.copyWith(indexName: indexName, page: 0));
   }
 
   /// Get stream of list of brand facets
@@ -80,19 +70,19 @@ class SearchRepository {
 
   /// Toggle selection of a brand facet
   void toggleBrand(String brand) {
-    pagingController.refresh();
     _brandFacetList.toggle(brand);
+    _hitsSearcher.applyState((state) => state.copyWith(page: 0));
   }
 
   /// Toggle selection of a size facet
   void toggleSize(String size) {
-    pagingController.refresh();
     _sizeFacetList.toggle(size);
+    _hitsSearcher.applyState((state) => state.copyWith(page: 0));
   }
 
   /// Clear all filters
   void clearFilters() {
-    pagingController.refresh();
     _filterState.clear();
+    _hitsSearcher.applyState((state) => state.copyWith(page: 0));
   }
 }

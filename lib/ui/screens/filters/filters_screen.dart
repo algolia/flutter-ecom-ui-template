@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 
 import '../../../data/search_repository.dart';
 import '../../../model/search_metadata.dart';
+import '../../../model/sorting.dart';
 import '../../app_theme.dart';
 
 class FiltersScreen extends StatefulWidget {
-  const FiltersScreen({Key? key}) : super(key: key);
+  const FiltersScreen({super.key});
 
   @override
   _FiltersScreenState createState() => _FiltersScreenState();
@@ -16,13 +17,6 @@ class FiltersScreen extends StatefulWidget {
 enum FiltersSection { none, sort, brand, size }
 
 class _FiltersScreenState extends State<FiltersScreen> {
-  final _indicesTitles = const <String, String>{
-    'STAGING_native_ecom_demo_products': 'Most popular',
-    'STAGING_native_ecom_demo_products_products_price_asc': 'Price Low to High',
-    'STAGING_native_ecom_demo_products_products_price_desc':
-        'Price High to Low',
-  };
-
   FiltersSection activeSection = FiltersSection.none;
 
   bool _isActive(FiltersSection section) => section == activeSection;
@@ -136,37 +130,37 @@ class _FiltersScreenState extends State<FiltersScreen> {
           const Text('Sort',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
           if (!_isActive(FiltersSection.sort))
-            StreamBuilder<String>(
+            StreamBuilder<Sorting>(
                 stream: context.read<SearchRepository>().selectedIndexName,
-                builder: (context, snapshot) => Text(snapshot.hasData
-                    ? '${_indicesTitles[snapshot.data!]}'
-                    : '')),
+                builder: (context, snapshot) =>
+                    Text(snapshot.hasData ? snapshot.data!.title : '')),
         ],
       ),
       FiltersSection.sort,
       null);
 
-  Widget _sortSelector(BuildContext context) => StreamBuilder<String>(
+  Widget _sortSelector(BuildContext context) => StreamBuilder<Sorting>(
       stream: context.read<SearchRepository>().selectedIndexName,
       builder: (context, snapshot) {
-        final selectedIndexName = snapshot.data;
+        final selectedIndex = snapshot.data;
         return SliverFixedExtentList(
             itemExtent: 40,
             delegate: SliverChildBuilderDelegate(
               (BuildContext context, int index) {
-                final item = _indicesTitles.entries.toList()[index];
+                final item = Sorting.values[index];
                 final searchRepository = context.read<SearchRepository>();
                 return InkWell(
-                    onTap: () => searchRepository.selectIndexName(item.key),
+                    onTap: () =>
+                        searchRepository.selectIndexName(item.indexName),
                     child: Text(
-                      item.value,
+                      item.title,
                       style: TextStyle(
-                          fontWeight: item.key == selectedIndexName
+                          fontWeight: item == selectedIndex
                               ? FontWeight.bold
                               : FontWeight.normal),
                     ));
               },
-              childCount: _indicesTitles.length,
+              childCount: Sorting.values.length,
             ));
       });
 
@@ -198,7 +192,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
                         ),
                         Text(facet.item.value),
                         const Spacer(),
-                        Text('${facet.item.count}'),
+                        Text(facet.item.count > 0 ? '${facet.item.count}' : ''),
                       ]),
                       onTap: () => context
                           .read<SearchRepository>()
@@ -260,8 +254,9 @@ class _FiltersScreenState extends State<FiltersScreen> {
         children: [
           Expanded(
             child: OutlinedButton(
-                onPressed: () =>
-                    context.read<SearchRepository>().clearFilters(),
+                onPressed: () {
+                  context.read<SearchRepository>().clearFilters();
+                },
                 style: OutlinedButton.styleFrom(
                   primary: AppTheme.darkBlue,
                   side: const BorderSide(
