@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../data/product_repository.dart';
+import '../../../data/suggestion_repository.dart';
 import '../../../model/product.dart';
 import '../../widgets/app_bar_view.dart';
 import '../../widgets/product_card_view.dart';
@@ -19,17 +20,22 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   void _presentProductPage(BuildContext context, String productID) {
-    final productRepository = context.read<ProductRepository>();
-    productRepository.getProduct(productID).then((product) => Navigator.push(
+    Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => ProductScreen(product: product),
-        )));
+          builder: (_) => Provider<ProductRepository>(
+              create: (_) => ProductRepository(),
+              dispose: (_, value) => value.dispose(),
+              child: ProductScreen(productID: productID)),
+        ));
   }
 
   void _presentAutoComplete(BuildContext context) =>
       Navigator.of(context).push(PageRouteBuilder(
-        pageBuilder: (_, __, ___) => const AutocompleteScreen(),
+        pageBuilder: (_, __, ___) => Provider<SuggestionRepository>(
+            create: (_) => SuggestionRepository(),
+            dispose: (_, value) => value.dispose(),
+            child: const AutocompleteScreen()),
         fullscreenDialog: true,
       ));
 

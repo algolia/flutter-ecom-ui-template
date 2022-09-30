@@ -50,4 +50,9 @@ class SuggestionRepository {
   void clearHistory() {
     _history.sink.add([]);
   }
+
+  /// Dispose of underlying resources.
+  void dispose() {
+    _suggestionsSearcher.dispose();
+  }
 }

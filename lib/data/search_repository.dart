@@ -30,8 +30,19 @@ class SearchRepository {
     attribute: 'available_sizes',
   );
 
-  SearchRepository() {}
+  /// Disposable components composite.
+  final CompositeDisposable _components = CompositeDisposable();
 
+  /// Search repository constructor.
+  SearchRepository() {
+    _components
+      ..add(_filterState)
+      ..add(_hitsSearcher)
+      ..add(_brandFacetList)
+      ..add(_sizeFacetList);
+  }
+
+  /// Set search page.
   void setPage(int page) {
     _hitsSearcher.applyState((state) => state.copyWith(page: page));
   }
@@ -84,5 +95,10 @@ class SearchRepository {
   void clearFilters() {
     _filterState.clear();
     _hitsSearcher.applyState((state) => state.copyWith(page: 0));
+  }
+
+  /// Dispose of underlying resources.
+  void dispose() {
+    _components.dispose();
   }
 }

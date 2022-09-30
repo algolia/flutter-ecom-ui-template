@@ -44,6 +44,17 @@ class ProductRepository {
     apiKey: Credentials.searchOnlyKey,
   );
 
+  /// Disposable components composite
+  final CompositeDisposable _components = CompositeDisposable();
+
+  /// Product repository constructor.
+  ProductRepository() {
+    _components
+      ..add(_shoesSearcher)
+      ..add(_seasonalProductsSearcher)
+      ..add(_recommendedProductsSearcher);
+  }
+
   /// Get stream of shoes.
   Stream<List<Product>> get shoes => _shoesSearcher.responses
       .map((response) => response.hits.map(Product.fromJson).toList());
@@ -65,5 +76,10 @@ class ProductRepository {
         .getObjectsByIds([productID]);
     final product = Product.fromJson(products.first.toMap());
     return product;
+  }
+
+  /// Dispose of underlying resources.
+  void dispose() {
+    _components.dispose();
   }
 }

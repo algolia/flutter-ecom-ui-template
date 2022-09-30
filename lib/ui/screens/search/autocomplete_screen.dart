@@ -103,8 +103,11 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
                     )));
           });
 
-  Widget _sectionBody<Item>(BuildContext context,
-          Stream<List<Item>> itemsStream, Function(Item) rowBuilder) =>
+  Widget _sectionBody<Item>(
+    BuildContext context,
+    Stream<List<Item>> itemsStream,
+    Function(Item) rowBuilder,
+  ) =>
       StreamBuilder<List<Item>>(
           stream: itemsStream,
           builder: (context, snapshot) {
@@ -134,11 +137,13 @@ class _AutocompleteScreenState extends State<AutocompleteScreen> {
 
   void _onSubmitSearch(String query, BuildContext context) {
     context.read<SuggestionRepository>().addToHistory(query);
-    context.read<SearchRepository>().search(query);
     Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => const SearchResultsScreen(),
+          builder: (BuildContext context) => Provider<SearchRepository>(
+              create: (_) => SearchRepository(),
+              dispose: (_, value) => value.dispose(),
+              child: SearchResultsScreen(query: query)),
         ));
   }
 

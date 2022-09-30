@@ -18,7 +18,9 @@ import 'components/paged_hits_list_view.dart';
 import 'components/search_header_view.dart';
 
 class SearchResultsScreen extends StatefulWidget {
-  const SearchResultsScreen({Key? key}) : super(key: key);
+  const SearchResultsScreen({Key? key, required this.query}) : super(key: key);
+
+  final String query;
 
   @override
   _SearchResultsScreen createState() => _SearchResultsScreen();
@@ -43,6 +45,8 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
       _pagingController.appendPage(products.items, products.nextPage);
     })
       ..onError((error) => _pagingController.error = error);
+
+    searchRepository.search(widget.query);
   }
 
   @override
@@ -108,12 +112,14 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
   }
 
   void _presentProductPage(BuildContext context, String productID) {
-    final repository = context.read<ProductRepository>();
-    repository.getProduct(productID).then((product) => Navigator.push(
+    Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => ProductScreen(product: product),
-        )));
+          builder: (_) => Provider<ProductRepository>(
+              create: (_) => ProductRepository(),
+              dispose: (_, value) => value.dispose(),
+              child: ProductScreen(productID: productID)),
+        ));
   }
 
   Widget _noResults(BuildContext context) {
