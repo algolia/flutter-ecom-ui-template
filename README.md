@@ -9,5 +9,5 @@ The complete documentation is available [here][2].
 <img src="./resources/demo.gif" width="300"/>
 </p>
 
-[1]: https://github.com/algolia/algoliasearch-helper-flutter/tree/main/helper_flutter
+[1]: https://pub.dev/packages/algolia_helper_flutter
 [2]: https://www.algolia.com/doc/guides/building-search-ui/ecommerce-ui-template/ecommerce-ui-template-overview/ios/
