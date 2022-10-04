@@ -29,17 +29,20 @@ class SizeSelectorView extends StatelessWidget {
                   if (facet.isSelected) {
                     return ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            primary: AppTheme.darkBlue),
+                          backgroundColor: AppTheme.darkBlue,
+                          padding: const EdgeInsets.all(2),
+                        ),
                         onPressed: () => onToggle(facet.item.value),
                         child: Text(facet.item.value));
                   } else {
                     return OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          primary: AppTheme.darkBlue,
+                          foregroundColor: AppTheme.darkBlue,
                           side: const BorderSide(
                               width: 1.0,
                               color: AppTheme.darkBlue,
                               style: BorderStyle.solid),
+                          padding: const EdgeInsets.all(2),
                         ),
                         onPressed: () => onToggle(facet.item.value),
                         child: Text(facet.item.value));
