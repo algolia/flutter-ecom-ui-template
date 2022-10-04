@@ -4,7 +4,7 @@ import 'package:flutter_ecom_demo/ui/screens/filters/components/sort_selector_vi
 import 'package:provider/provider.dart';
 
 import '../../../data/search_repository.dart';
-import '../../../model/sorting.dart';
+import '../../../model/sort_index.dart';
 import 'components/brand_selector_view.dart';
 import 'components/expandable_header_view.dart';
 import 'components/filters_footer_view.dart';
@@ -15,7 +15,7 @@ class FiltersScreen extends StatefulWidget {
   const FiltersScreen({super.key});
 
   @override
-  _FiltersScreenState createState() => _FiltersScreenState();
+  State<FiltersScreen> createState() => _FiltersScreenState();
 }
 
 enum FiltersSection { none, sort, brand, size }
@@ -43,10 +43,10 @@ class _FiltersScreenState extends State<FiltersScreen> {
             Expanded(
               child: CustomScrollView(
                 slivers: [
-                  _sortHeader(searchRepository.selectedIndexName),
+                  _sortHeader(searchRepository.selectedIndex),
                   if (_isActive(FiltersSection.sort))
                     SortSelectorView(
-                      sorts: searchRepository.selectedIndexName,
+                      sorts: searchRepository.selectedIndex,
                       onToggle: searchRepository.selectIndexName,
                     ),
                   _brandHeader(),
@@ -73,7 +73,7 @@ class _FiltersScreenState extends State<FiltersScreen> {
         ));
   }
 
-  Widget _sortHeader(Stream<Sorting> sorts) {
+  Widget _sortHeader(Stream<SortIndex> sorts) {
     const section = FiltersSection.sort;
     final isActive = _isActive(section);
     return ExpandableHeaderView(

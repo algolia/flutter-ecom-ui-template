@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../../../model/sorting.dart';
+import '../../../../model/sort_index.dart';
 
 class SortSelectorView extends StatelessWidget {
   const SortSelectorView(
       {super.key, required this.sorts, required this.onToggle});
 
-  final Stream<Sorting> sorts;
+  final Stream<SortIndex> sorts;
   final Function(String) onToggle;
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Sorting>(
+    return StreamBuilder<SortIndex>(
         stream: sorts,
         builder: (context, snapshot) {
           final selectedIndex = snapshot.data;
@@ -19,7 +19,7 @@ class SortSelectorView extends StatelessWidget {
               itemExtent: 40,
               delegate: SliverChildBuilderDelegate(
                 (BuildContext context, int index) {
-                  final item = Sorting.values[index];
+                  final item = SortIndex.values[index];
                   return InkWell(
                       onTap: () => onToggle(item.indexName),
                       child: Text(
@@ -30,7 +30,7 @@ class SortSelectorView extends StatelessWidget {
                                 : FontWeight.normal),
                       ));
                 },
-                childCount: Sorting.values.length,
+                childCount: SortIndex.values.length,
               ));
         });
   }

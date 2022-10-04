@@ -1,5 +1,5 @@
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
-import 'package:flutter_ecom_demo/model/sorting.dart';
+import 'package:flutter_ecom_demo/model/sort_index.dart';
 
 import '../credentials.dart';
 import '../model/product.dart';
@@ -63,12 +63,12 @@ class SearchRepository {
   Stream<int> get appliedFiltersCount =>
       _filterState.filters.map((event) => event.getFilters().length);
 
-  /// Get the name of currently selected index
-  Stream<Sorting> get selectedIndexName =>
-      _hitsSearcher.state.map((state) => Sorting.of(state.indexName));
+  /// Get currently selected index
+  Stream<SortIndex> get selectedIndex =>
+      _hitsSearcher.state.map((state) => SortIndex.of(state.indexName));
 
-  /// Update the name of the index to target
-  void selectIndexName(String indexName) {
+  /// Update target index
+   void selectIndexName(String indexName) {
     _hitsSearcher
         .applyState((state) => state.copyWith(indexName: indexName, page: 0));
   }
