@@ -1,68 +1,85 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/model/query.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/mode_switcher_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/no_results_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_grid_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/paged_hits_list_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/products/components/search_header_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:provider/provider.dart';
+
+import '../../../data/product_repository.dart';
+import '../../../data/search_repository.dart';
+import '../../../model/product.dart';
+import '../../../model/search_metadata.dart';
+import '../../widgets/app_bar_view.dart';
+import '../filters/filters_screen.dart';
+import '../product/product_screen.dart';
+import 'components/mode_switcher_view.dart';
+import 'components/no_results_view.dart';
+import 'components/paged_hits_grid_view.dart';
+import 'components/paged_hits_list_view.dart';
+import 'components/search_header_view.dart';
 
 class SearchResultsScreen extends StatefulWidget {
   const SearchResultsScreen({Key? key, required this.query}) : super(key: key);
 
-  final Query query;
+  final String query;
 
   @override
   _SearchResultsScreen createState() => _SearchResultsScreen();
 }
 
 class _SearchResultsScreen extends State<SearchResultsScreen> {
-  final _productRepository = ProductRepository();
-
-  Query get _query => widget.query;
-  int _resultsCount = 0;
   HitsDisplay _display = HitsDisplay.grid;
+  final GlobalKey<ScaffoldState> _key = GlobalKey();
 
   final PagingController<int, Product> _pagingController =
       PagingController(firstPageKey: 0);
 
+  late final StreamSubscription _subscription;
+
   @override
   void initState() {
-    _pagingController.addPageRequestListener((pageKey) {
-      _fetchPage(pageKey);
-    });
     super.initState();
-  }
+    final searchRepository = context.read<SearchRepository>();
+    _pagingController.addPageRequestListener(searchRepository.setPage);
+    _subscription = searchRepository.productsPage.listen((products) {
+      if (products.page == 0) _pagingController.refresh();
+      _pagingController.appendPage(products.items, products.nextPage);
+    })
+      ..onError((error) => _pagingController.error = error);
 
-  Future<void> _fetchPage(int pageKey) async {
-    _query.page = pageKey;
-    try {
-      final response = await _productRepository.searchProducts(_query);
-      final hits = response.hits ?? List.empty();
-      final isLastPage = response.page == response.nbPages;
-      final nextPageKey = isLastPage ? null : pageKey + 1;
-      _pagingController.appendPage(hits, nextPageKey);
-      setState(() {
-        _resultsCount = response.nbHits?.toInt() ?? 0;
-      });
-    } catch (error) {
-      _pagingController.error = error;
-    }
+    searchRepository.search(widget.query);
   }
 
   @override
   Widget build(BuildContext context) {
+    final searchRepository = context.read<SearchRepository>();
     return Scaffold(
+      key: _key,
       appBar: const AppBarView(),
-      body: SafeArea(
-          child: Column(
+      endDrawer: const Drawer(
+        child: FiltersScreen(),
+      ),
+      body: Column(
         children: [
-          SearchHeaderView(
-              query: _query.query ?? "", resultsCount: _resultsCount),
+          StreamBuilder<SearchMetadata>(
+            stream: searchRepository.searchMetadata,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final data = snapshot.data!;
+                return StreamBuilder<int>(
+                    stream: searchRepository.appliedFiltersCount,
+                    builder: (context, snapshot) => SearchHeaderView(
+                          query: data.query,
+                          resultsCount: data.nbHits,
+                          filtersButtonTapped: () {
+                            _key.currentState?.openEndDrawer();
+                          },
+                          appliedFiltersCount: snapshot.data ?? 0,
+                        ));
+              } else {
+                return Container();
+              }
+            },
+          ),
           Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: ModeSwitcherView(
@@ -70,11 +87,12 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
                   onPressed: (display) => setState(() => _display = display))),
           Expanded(
             child: Padding(
-                padding: const EdgeInsets.only(top: 10, left: 8, right: 8),
-                child: _hitsDisplay()),
+              padding: const EdgeInsets.only(top: 10, left: 8, right: 8),
+              child: _hitsDisplay(),
+            ),
           ),
         ],
-      )),
+      ),
     );
   }
 
@@ -94,11 +112,14 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
   }
 
   void _presentProductPage(BuildContext context, String productID) {
-    _productRepository.getProduct(productID).then((product) => Navigator.push(
+    Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => ProductScreen(product: product),
-        )));
+          builder: (_) => Provider<ProductRepository>(
+              create: (_) => ProductRepository(),
+              dispose: (_, value) => value.dispose(),
+              child: ProductScreen(productID: productID)),
+        ));
   }
 
   Widget _noResults(BuildContext context) {
@@ -107,7 +128,8 @@ class _SearchResultsScreen extends State<SearchResultsScreen> {
 
   @override
   void dispose() {
-    _pagingController.dispose();
     super.dispose();
+    _subscription.cancel();
+    _pagingController.dispose();
   }
 }

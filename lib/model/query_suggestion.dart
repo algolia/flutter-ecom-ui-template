@@ -1,17 +1,16 @@
+import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
+
 class QuerySuggestion {
   QuerySuggestion(this.query, this.highlighted);
 
   String query;
-  String? highlighted;
+  HighlightedString? highlighted;
 
-  static QuerySuggestion fromJson(Map<String, dynamic> json) {
-    return QuerySuggestion(
-        json["query"], json["_highlightResult"]["query"]["value"]);
+  static QuerySuggestion fromJson(Hit hit) {
+    final highlighted = hit.getHighlightedString('query', inverted: true);
+    return QuerySuggestion(hit["query"], highlighted);
   }
 
   @override
-  String toString() {
-    return query;
-  }
-
+  String toString() => query;
 }

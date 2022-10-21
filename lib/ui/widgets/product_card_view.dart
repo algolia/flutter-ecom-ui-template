@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/ui/app_theme.dart';
-import 'package:flutter_ecom_demo/ui/widgets/color_indicator_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/rating_view.dart';
+
+import '../../model/product.dart';
+import '../app_theme.dart';
+import 'color_indicator_view.dart';
+import 'rating_view.dart';
 
 class ProductCardView extends StatelessWidget {
   const ProductCardView(
       {Key? key,
       required this.product,
-      this.imageAlignment = Alignment.center,
+      this.imageAlignment = Alignment.bottomCenter,
       this.onTap})
       : super(key: key);
 

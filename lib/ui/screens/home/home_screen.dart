@@ -1,82 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/data/product_repository.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/model/query.dart';
-import 'package:flutter_ecom_demo/ui/screens/home/components/home_banner_view.dart';
-import 'package:flutter_ecom_demo/ui/screens/product/product_screen.dart';
-import 'package:flutter_ecom_demo/ui/screens/search/autocomplete_screen.dart';
-import 'package:flutter_ecom_demo/ui/widgets/app_bar_view.dart';
-import 'package:flutter_ecom_demo/ui/widgets/product_card_view.dart';
+import 'package:provider/provider.dart';
 
+import '../../../data/product_repository.dart';
+import '../../../data/suggestion_repository.dart';
+import '../../../model/product.dart';
+import '../../widgets/app_bar_view.dart';
+import '../../widgets/product_card_view.dart';
+import '../product/product_screen.dart';
+import '../search/autocomplete_screen.dart';
+import 'components/home_banner_view.dart';
 import 'components/products_view.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final _productRepository = ProductRepository();
-
-  List<Product> _newInShoes = [];
-  List<Product> _seasonal = [];
-  List<Product> _recommended = [];
-
-  @override
-  void initState() {
-    super.initState();
-    setupLatest();
-    setupSeasonal();
-    setupRecommended();
-  }
-
-  Future<void> setupLatest() async {
-    final shoes = await _productRepository.getProducts(Query('shoes'));
-    setState(() {
-      _newInShoes = shoes;
-    });
-  }
-
-  Future<void> setupSeasonal() async {
-    final products = await _productRepository.getSeasonalProducts();
-    setState(() {
-      _seasonal = products;
-    });
-  }
-
-  Future<void> setupRecommended() async {
-    final products = await _productRepository.getProducts(Query('jacket'));
-    setState(() {
-      _recommended = products;
-    });
-  }
-
   void _presentProductPage(BuildContext context, String productID) {
-    _productRepository.getProduct(productID).then((product) => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (BuildContext context) => ProductScreen(product: product),
-        )));
-  }
-
-  void _presentAutoComplete(BuildContext context) {
     Navigator.push(
         context,
-        PageRouteBuilder(
-          pageBuilder: (_, __, ___) =>  const AutocompleteScreen(),
-          fullscreenDialog: true,
+        MaterialPageRoute(
+          builder: (_) => Provider<ProductRepository>(
+              create: (_) => ProductRepository(),
+              dispose: (_, value) => value.dispose(),
+              child: ProductScreen(productID: productID)),
         ));
   }
 
-  Widget _productView(BuildContext context, Product product) {
-    return ProductCardView(
-        product: product,
-        imageAlignment: Alignment.bottomCenter,
-        onTap: (objectID) => _presentProductPage(context, objectID)
-    );
-  }
+  void _presentAutoComplete(BuildContext context) =>
+      Navigator.of(context).push(PageRouteBuilder(
+        pageBuilder: (_, __, ___) => Provider<SuggestionRepository>(
+            create: (_) => SuggestionRepository(),
+            dispose: (_, value) => value.dispose(),
+            child: const AutocompleteScreen()),
+        fullscreenDialog: true,
+      ));
+
+  Widget _productView(BuildContext context, Product product) => ProductCardView(
+      product: product,
+      onTap: (objectID) => _presentProductPage(context, objectID));
+
+  Widget _productsView(
+          BuildContext context, String title, Stream<List<Product>> products) =>
+      ProductsView(title: title, items: products, productWidget: _productView);
 
   @override
   Widget build(BuildContext context) {
@@ -130,32 +99,34 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         body: SafeArea(
+            bottom: false,
             child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const HomeBannerView(),
-              Padding(
-                padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
-                child: Column(
-                  children: [
-                    ProductsView(
-                        title: 'New in shoes',
-                        items: _newInShoes,
-                        productWidget: _productView),
-                    ProductsView(
-                        title: 'Spring/Summer 2021',
-                        items: _seasonal,
-                        productWidget: _productView),
-                    ProductsView(
-                        title: 'Recommended for you',
-                        items: _recommended,
-                        productWidget: _productView),
-                  ],
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const HomeBannerView(),
+                  Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+                      child: Column(
+                        children: [
+                          _productsView(context, 'New in shoes',
+                              context.read<ProductRepository>().shoes),
+                          _productsView(
+                              context,
+                              'Spring/Summer 2021',
+                              context
+                                  .read<ProductRepository>()
+                                  .seasonalProducts),
+                          _productsView(
+                              context,
+                              'Recommended for you',
+                              context
+                                  .read<ProductRepository>()
+                                  .recommendedProducts),
+                        ],
+                      )),
+                ],
               ),
-            ],
-          ),
-        )));
+            )));
   }
 }

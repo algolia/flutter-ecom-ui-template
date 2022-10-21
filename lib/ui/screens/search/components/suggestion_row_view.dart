@@ -1,7 +1,7 @@
+import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/query_suggestion.dart';
 
-import 'highlighted_text_view.dart';
+import '../../../../model/query_suggestion.dart';
 
 class SuggestionRowView extends StatelessWidget {
   const SuggestionRowView({Key? key, required this.suggestion, this.onComplete})
@@ -17,9 +17,10 @@ class SuggestionRowView extends StatelessWidget {
       const SizedBox(
         width: 10,
       ),
-      HighlightedTextView(
-          highlighted: suggestion.highlighted!,
-          isInverted: true),
+      RichText(
+          text: TextSpan(
+              style: const TextStyle(color: Colors.black),
+              children: suggestion.highlighted!.toInlineSpans())),
       const Spacer(),
       IconButton(
         onPressed: () => onComplete?.call(suggestion.query),

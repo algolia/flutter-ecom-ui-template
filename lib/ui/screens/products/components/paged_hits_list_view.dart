@@ -1,7 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/ui/widgets/product_item_view.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+
+import '../../../../model/product.dart';
+import '../../../widgets/product_item_view.dart';
 
 class PagedHitsListView extends StatelessWidget {
   const PagedHitsListView(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_ecom_demo/model/product.dart';
-import 'package:flutter_ecom_demo/ui/app_theme.dart';
+
+import '../../../../model/product.dart';
+import '../../../app_theme.dart';
 
 class ImageSliderView extends StatefulWidget {
   const ImageSliderView({Key? key, required this.product}) : super(key: key);

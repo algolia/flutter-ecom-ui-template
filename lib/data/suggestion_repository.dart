@@ -1,51 +1,58 @@
-import 'package:algolia/algolia.dart';
-import 'package:flutter_ecom_demo/credentials.dart';
-import 'package:flutter_ecom_demo/model/query.dart';
-import 'package:flutter_ecom_demo/model/query_suggestion.dart';
+import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
+import 'package:rxdart/rxdart.dart';
+
+import '../credentials.dart';
+import '../model/query_suggestion.dart';
 
 /// Query suggestions data repository.
 class SuggestionRepository {
-  SuggestionRepository._internal();
+  /// Hits Searcher for suggestions index
+  final _suggestionsSearcher = HitsSearcher(
+    applicationID: Credentials.applicationID,
+    apiKey: Credentials.searchOnlyKey,
+    indexName: Credentials.suggestionsIndex,
+  );
 
-  static final SuggestionRepository _instance =
-      SuggestionRepository._internal();
-
-  factory SuggestionRepository() {
-    return _instance;
+  /// Get query suggestions for a given query string.
+  void query(String query) {
+    _suggestionsSearcher.query(query);
   }
 
-  final Algolia _algoliaClient = Algolia.init(
-      applicationId: Credentials.applicationID,
-      apiKey: Credentials.searchOnlyKey);
+  /// Get query suggestions stream
+  late final Stream<List<QuerySuggestion>> suggestions = _suggestionsSearcher
+      .responses
+      .map((response) => response.hits.map(QuerySuggestion.fromJson).toList());
 
-  final List<String> _history = ['jackets'];
+  /// In-memory store of submitted queries.
+  final BehaviorSubject<List<String>> _history =
+      BehaviorSubject.seeded(['jackets']);
 
-  /// Get suggestions for a query.
-  Future<List<QuerySuggestion>> getSuggestions(Query query) async {
-    AlgoliaQuery algoliaQuery =
-        _algoliaClient.instance.index(Credentials.suggestionsIndex);
-    algoliaQuery = query.apply(algoliaQuery);
-    AlgoliaQuerySnapshot snap = await algoliaQuery.getObjects();
-    final hits = snap.toMap()["hits"];
-    return List<QuerySuggestion>.from(
-        hits.map((hit) => QuerySuggestion.fromJson(hit)));
-  }
+  /// Stream of previously submitted queries.
+  Stream<List<String>> get history => _history;
 
-  List<String> getHistory() {
-    return _history;
-  }
-
+  /// Add a query to queries history store.
   void addToHistory(String query) {
     if (query.isEmpty) return;
-    _history.removeWhere((element) => element == query);
-    _history.add(query);
+    final _current = _history.value;
+    _current.removeWhere((element) => element == query);
+    _current.add(query);
+    _history.sink.add(_current);
   }
 
+  /// Remove a query from queries history store.
   void removeFromHistory(String query) {
-    _history.removeWhere((element) => element == query);
+    final _current = _history.value;
+    _current.removeWhere((element) => element == query);
+    _history.sink.add(_current);
   }
 
+  /// Clear everything from queries history store.
   void clearHistory() {
-    _history.clear();
+    _history.sink.add([]);
+  }
+
+  /// Dispose of underlying resources.
+  void dispose() {
+    _suggestionsSearcher.dispose();
   }
 }
