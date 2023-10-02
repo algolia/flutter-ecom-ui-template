@@ -1,4 +1,4 @@
-import 'package:algolia/algolia.dart';
+import 'package:algoliasearch/algoliasearch.dart';
 import 'package:algolia_helper_flutter/algolia_helper_flutter.dart';
 
 import '../credentials.dart';
@@ -39,8 +39,8 @@ class ProductRepository {
   );
 
   /// Algolia API client instance.
-  final Algolia _algoliaClient = const Algolia.init(
-    applicationId: Credentials.applicationID,
+  final SearchClient _algoliaClient = SearchClient(
+    appId: Credentials.applicationID,
     apiKey: Credentials.searchOnlyKey,
   );
 
@@ -71,10 +71,10 @@ class ProductRepository {
 
   /// Get product by ID.
   Future<Product> getProduct(String productID) async {
-    List<AlgoliaObjectSnapshot> products = await _algoliaClient.instance
-        .index(Credentials.hitsIndex)
-        .getObjectsByIds([productID]);
-    final product = Product.fromJson(products.first.toMap());
+    final rawProduct = await _algoliaClient.get(
+            path: '/indexes/${Credentials.hitsIndex}/$productID')
+        as Map<String, dynamic>;
+    final product = Product.fromJson(rawProduct);
     return product;
   }
 
